@@ -1,0 +1,137 @@
+package com.example.pokemonster.repository
+
+import android.util.Log
+import com.example.pokemonster.io.local.PokemonDatabase
+import com.example.pokemonster.io.local.entities.PokemonEntity
+import com.example.pokemonster.io.local.entities.PokemonMoveEntity
+import com.example.pokemonster.io.local.entities.PokemonStatEntity
+import com.example.pokemonster.io.local.toMoveEntity
+import com.example.pokemonster.io.local.toPokemonEntity
+import com.example.pokemonster.io.local.toStateEntity
+import com.example.pokemonster.io.remote.PokemonAPI
+import com.example.pokemonster.io.remote.models.moves.MoveResponse
+import com.example.pokemonster.repository.states.Results
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import retrofit2.HttpException
+import java.io.IOException
+import java.net.SocketTimeoutException
+import javax.inject.Inject
+
+class PokemonRepositoryImpl @Inject constructor(
+    private val pokemonAPI: PokemonAPI,
+    private val pokemonDatabase: PokemonDatabase
+) : PokemonRepository {
+    override fun getAllPokemon(): SharedFlow<Results<List<PokemonEntity>>> {
+        val sharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+        CoroutineScope(Dispatchers.Default).launch {
+            pokemonDatabase.pokemonDao().getAllPokemons().collect{ pokemons ->
+                if (pokemons.isEmpty()){
+                    getRemotePokemonAndCache(sharedFlow)
+                } else {
+                    sharedFlow.emit(Results.Success(pokemons))
+                }
+            }
+
+        }
+        return sharedFlow
+    }
+
+    override fun searchPokemon(searchName: String): SharedFlow<Results<List<PokemonEntity>>> {
+        val sharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+        CoroutineScope(Dispatchers.Default).launch {
+            pokemonDatabase.pokemonDao().searchPokemons("$searchName%").collect{ pokemons ->
+                sharedFlow.emit(Results.Success(pokemons))
+            }
+        }
+        return sharedFlow
+    }
+
+    private fun getRemotePokemonAndCache(sharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>) {
+        CoroutineScope(Dispatchers.Default).launch {
+            sharedFlow.emit(Results.Loading)
+            for (i in 1..100) {
+                val call = async(Dispatchers.IO) {
+                    pokemonAPI.getPokemon(i)
+                }
+                try {
+                    val response = call.await()
+                    if (response.isSuccessful && response.body() != null) {
+                        Log.d("TAG", "getPokemon: ${response.body()!!.id}")
+                        withContext(Dispatchers.IO){
+                            pokemonDatabase.pokemonDao().insertPokemon(response.body()!!.toPokemonEntity())
+                            response.body()!!.stats.forEach{ stat ->
+                                pokemonDatabase.pokemonDao().insertPokemonState(stat.toStateEntity(response.body()!!.id))
+                            }
+                            response.body()!!.moves.forEach { move ->
+                                pokemonDatabase.pokemonDao().insertPokemonMove(move.toMoveEntity(response.body()!!.id))
+                            }
+                        }
+                    } else {
+                        if (response.code() == 404) {
+                            sharedFlow.emit(Results.OnError(Exception("Pokemon not found")))
+                        } else {
+                            sharedFlow.emit(Results.OnError(Exception("brrrrrrr")))
+                        }
+                    }
+                } catch (e: HttpException) {
+                    sharedFlow.emit(Results.OnError(Exception("unable to load Pokemons")))
+                } catch (e: IOException) {
+                    sharedFlow.emit(Results.OnError(Exception("unable to load Pokemons")))
+                } catch (e: Exception) {
+                    sharedFlow.emit(Results.OnError(Exception("unable to load Pokemons")))
+                }
+            }
+            pokemonDatabase.pokemonDao().getAllPokemons().collect{ pokemons ->
+                sharedFlow.emit(Results.Success(pokemons))
+            }
+        }
+    }
+
+    override fun getMoveDetails(id: Int): SharedFlow<Results<MoveResponse>> {
+        val sharedFlow = MutableSharedFlow<Results<MoveResponse>>()
+        CoroutineScope(Dispatchers.IO).launch {
+            sharedFlow.emit(Results.Loading)
+            withContext(Dispatchers.Main){
+                try {
+                    val response = pokemonAPI.getMoveDetails(id)
+                    if (response.isSuccessful && response.body() != null){
+                        sharedFlow.emit(Results.Success(response.body()!!))
+                    } else {
+                        if (response.code() == 404){
+                            sharedFlow.emit(Results.OnError(Exception("Move not found")))
+                        } else {
+                            sharedFlow.emit(Results.OnError(Exception("brrrrrrr")))
+                        }
+                    }
+                } catch (e: java.lang.Exception){
+                    sharedFlow.emit(Results.OnError(Exception("Unable to get move details")))
+                }
+            }
+        }
+        return sharedFlow
+    }
+
+    override suspend fun getPokemonStates(pokemonId: Int): Flow<List<PokemonStatEntity>> {
+        val call = CoroutineScope(Dispatchers.IO).async {
+            pokemonDatabase.pokemonDao().getPokemonStates(pokemonId)
+        }
+        return call.await()
+    }
+
+    override suspend fun getPokemonMoves(pokemonId: Int): Flow<List<PokemonMoveEntity>> {
+        val call = CoroutineScope(Dispatchers.IO).async {
+            pokemonDatabase.pokemonDao().getPokemonMoves(pokemonId)
+        }
+        return call.await()
+    }
+
+
+    override fun setMoveDescription(pokemonMoveEntity: PokemonMoveEntity){
+        CoroutineScope(Dispatchers.IO).launch {
+            pokemonDatabase.pokemonDao().setMoveEffectDescription(pokemonMoveEntity)
+        }
+    }
+}
