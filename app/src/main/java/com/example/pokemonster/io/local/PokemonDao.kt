@@ -2,14 +2,14 @@ package com.example.pokemonster.io.local
 
 import androidx.room.*
 import com.example.pokemonster.io.local.entities.FavoritePokemonsEntity
-import com.example.pokemonster.io.local.entities.PokemonMoveEntity
 import com.example.pokemonster.io.local.entities.PokemonEntity
+import com.example.pokemonster.io.local.entities.PokemonMoveEntity
 import com.example.pokemonster.io.local.entities.PokemonStatEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PokemonDao {
-    /////////////////////POKEMON////////////////////////
+    // ///////////////////POKEMON////////////////////////
     @Query("SELECT * FROM tblPokemon")
     fun getAllPokemons(): Flow<List<PokemonEntity>>
 
@@ -28,7 +28,7 @@ interface PokemonDao {
     @Delete
     fun deleteAllPokemon(vararg pokemonEntity: PokemonEntity)
 
-    ///////////////////////FAVORITE/////////////////////////
+    // /////////////////////FAVORITE/////////////////////////
 
     @Query("SELECT tblPokemon.id, tblPokemon.name, tblPokemon.imageUrl FROM tblPokemon LEFT JOIN tblFavorite ON tblPokemon.id = tblFavorite.pokemonId")
     fun getFavoritePokemons(): Flow<PokemonEntity>
@@ -38,7 +38,7 @@ interface PokemonDao {
 
     @Delete
     fun removeFromFavorite(favoritePokemonsEntity: FavoritePokemonsEntity)
-    ///////////////////////STAT//////////////////////////
+    // /////////////////////STAT//////////////////////////
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllStates(vararg pokemonEntity: PokemonStatEntity)
@@ -49,7 +49,7 @@ interface PokemonDao {
     @Query("SELECT * FROM tblStates where pokemonId=:pokemonId")
     fun getPokemonStates(pokemonId: Int): Flow<List<PokemonStatEntity>>
 
-    //////////////////////////MOVES////////////////////////////
+    // ////////////////////////MOVES////////////////////////////
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertAllPokemonMoves(vararg pokemonMoveEntity: PokemonMoveEntity)
 

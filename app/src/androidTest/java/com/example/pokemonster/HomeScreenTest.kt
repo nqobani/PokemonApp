@@ -11,10 +11,10 @@ import com.example.pokemonster.view.MainActivity
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import javax.inject.Inject
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import javax.inject.Inject
 
 @HiltAndroidTest
 @UninstallModules(AppModule::class)
@@ -32,9 +32,10 @@ class HomeScreenTest {
     lateinit var pokmonMovesList: ArrayList<PokemonMoveEntity>
 
     @Before
-    fun setUp(){
+    fun setUp() {
         hiltRule.inject()
-        pokmonList = arrayListOf(PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
+        pokmonList = arrayListOf(
+            PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
             PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
             PokemonEntity(2, "efg", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
             PokemonEntity(3, "hij", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
@@ -62,30 +63,32 @@ class HomeScreenTest {
         )
 
         pokmonMovesList = arrayListOf(
-            PokemonMoveEntity("1-1", 1, 1,"hp","dfodf"),
+            PokemonMoveEntity("1-1", 1, 1, "hp", "dfodf"),
             PokemonMoveEntity("2-1", 1, 2, "hpw", "efrty"),
-            PokemonMoveEntity("3-1", 1, 3,"hpe","jdfvsd"),
-            PokemonMoveEntity("4-1", 1, 4,"hpr","dfcd"),
-            PokemonMoveEntity("5-1", 1, 5,"hpt", "nhgbv"),
-            PokemonMoveEntity("1-2", 2, 1,"hpc", "hhdol"),
-            PokemonMoveEntity("2-2", 2, 2,"hpv","plsjm"),
-            PokemonMoveEntity("3-2", 2, 3,"hpb","sadfc"),
-            PokemonMoveEntity("4-2", 2, 4,"hpn", "hwefbjadh"),
-            PokemonMoveEntity("5-2", 2, 5,"hpm", "nkasdc"),
-            PokemonMoveEntity("1-3", 3, 1,"mm", "oeihwe"),
-            PokemonMoveEntity("2-3", 3, 2,"hh","cmnxv"),
-            PokemonMoveEntity("3-3", 3, 3,"kk", "hbcvn"),
-            PokemonMoveEntity("4-3", 3, 4,"rr","psado"),
-            PokemonMoveEntity("5-3", 3, 5,"xx", "bfdwertgg")
+            PokemonMoveEntity("3-1", 1, 3, "hpe", "jdfvsd"),
+            PokemonMoveEntity("4-1", 1, 4, "hpr", "dfcd"),
+            PokemonMoveEntity("5-1", 1, 5, "hpt", "nhgbv"),
+            PokemonMoveEntity("1-2", 2, 1, "hpc", "hhdol"),
+            PokemonMoveEntity("2-2", 2, 2, "hpv", "plsjm"),
+            PokemonMoveEntity("3-2", 2, 3, "hpb", "sadfc"),
+            PokemonMoveEntity("4-2", 2, 4, "hpn", "hwefbjadh"),
+            PokemonMoveEntity("5-2", 2, 5, "hpm", "nkasdc"),
+            PokemonMoveEntity("1-3", 3, 1, "mm", "oeihwe"),
+            PokemonMoveEntity("2-3", 3, 2, "hh", "cmnxv"),
+            PokemonMoveEntity("3-3", 3, 3, "kk", "hbcvn"),
+            PokemonMoveEntity("4-3", 3, 4, "rr", "psado"),
+            PokemonMoveEntity("5-3", 3, 5, "xx", "bfdwertgg")
         )
 
-        db.pokemonDao().insertAllPokemons(PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
+        db.pokemonDao().insertAllPokemons(
+            PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
             PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
             PokemonEntity(2, "efg", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
             PokemonEntity(3, "hij", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
             PokemonEntity(4, "klm", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
             PokemonEntity(5, "nop", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(6, "qrs", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"))
+            PokemonEntity(6, "qrs", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png")
+        )
 
         db.pokemonDao().insertAllStates(
             PokemonStatEntity("1-1", 1, "hp", 10),
@@ -106,36 +109,33 @@ class HomeScreenTest {
         )
 
         db.pokemonDao().insertAllPokemonMoves(
-            PokemonMoveEntity("1-1", 1, 1,"hp","dfodf"),
+            PokemonMoveEntity("1-1", 1, 1, "hp", "dfodf"),
             PokemonMoveEntity("2-1", 1, 2, "hpw", "efrty"),
-            PokemonMoveEntity("3-1", 1, 3,"hpe","jdfvsd"),
-            PokemonMoveEntity("4-1", 1, 4,"hpr","dfcd"),
-            PokemonMoveEntity("5-1", 1, 5,"hpt", "nhgbv"),
-            PokemonMoveEntity("1-2", 2, 1,"hpc", "hhdol"),
-            PokemonMoveEntity("2-2", 2, 2,"hpv","plsjm"),
-            PokemonMoveEntity("3-2", 2, 3,"hpb","sadfc"),
-            PokemonMoveEntity("4-2", 2, 4,"hpn", "hwefbjadh"),
-            PokemonMoveEntity("5-2", 2, 5,"hpm", "nkasdc"),
-            PokemonMoveEntity("1-3", 3, 1,"mm", "oeihwe"),
-            PokemonMoveEntity("2-3", 3, 2,"hh","cmnxv"),
-            PokemonMoveEntity("3-3", 3, 3,"kk", "hbcvn"),
-            PokemonMoveEntity("4-3", 3, 4,"rr","psado"),
-            PokemonMoveEntity("5-3", 3, 5,"xx", "bfdwertgg")
+            PokemonMoveEntity("3-1", 1, 3, "hpe", "jdfvsd"),
+            PokemonMoveEntity("4-1", 1, 4, "hpr", "dfcd"),
+            PokemonMoveEntity("5-1", 1, 5, "hpt", "nhgbv"),
+            PokemonMoveEntity("1-2", 2, 1, "hpc", "hhdol"),
+            PokemonMoveEntity("2-2", 2, 2, "hpv", "plsjm"),
+            PokemonMoveEntity("3-2", 2, 3, "hpb", "sadfc"),
+            PokemonMoveEntity("4-2", 2, 4, "hpn", "hwefbjadh"),
+            PokemonMoveEntity("5-2", 2, 5, "hpm", "nkasdc"),
+            PokemonMoveEntity("1-3", 3, 1, "mm", "oeihwe"),
+            PokemonMoveEntity("2-3", 3, 2, "hh", "cmnxv"),
+            PokemonMoveEntity("3-3", 3, 3, "kk", "hbcvn"),
+            PokemonMoveEntity("4-3", 3, 4, "rr", "psado"),
+            PokemonMoveEntity("5-3", 3, 5, "xx", "bfdwertgg")
         )
     }
 
-
-
     @Test
-    fun isShowing_the_correct_title(){
+    fun isShowing_the_correct_title() {
         composeRule.onNode(
             hasText(composeRule.activity.getString(R.string.home_title))
         ).assertExists()
     }
 
-
     @Test
-    fun searchTest(){
+    fun searchTest() {
         composeRule.onNodeWithText(
             composeRule.activity.getString(R.string.search_placeholder)
         ).assertExists()
@@ -146,49 +146,49 @@ class HomeScreenTest {
 
         composeRule.onAllNodes(
             hasText(pokmonList[1].name)
-            )[1].assertExists()
+        )[1].assertExists()
     }
 
     @Test
-    fun NavigateToStatesAndBackToHomeScreen(){
+    fun NavigateToStatesAndBackToHomeScreen() {
         composeRule.onNode(
             hasText(pokmonList[0].name)
-                    and
+                and
                     hasClickAction()
         ).assertExists()
 
         composeRule.onNode(
             hasText(pokmonList[0].name)
-                    and
+                and
                     hasClickAction()
         ).performClick()
 
         composeRule.onAllNodes(
             hasText(pokmonList[0].name)
-                    and
+                and
                     !hasClickAction()
         )[1].assertExists()
 
         composeRule.onNode(
             hasText(pokmonStateList[0].name)
-                    and
+                and
                     !hasClickAction()
         ).assertExists()
 
         composeRule.onNode(
             hasText(pokmonMovesList[0].name)
-                    and
+                and
                     hasClickAction()
         ).assertExists()
         composeRule.onNode(
             hasText(pokmonMovesList[0].name)
-                    and
+                and
                     hasClickAction()
         ).performClick()
 
         composeRule.onAllNodes(
             hasText(pokmonMovesList[0].name)
-                    and
+                and
                     !hasClickAction()
         )[1].assertExists()
     }

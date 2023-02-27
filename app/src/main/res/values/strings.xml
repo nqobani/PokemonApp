@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Pokemonster</string>
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="search_placeholder">Search</string>
     <string name="home_title">Pokemon</string>
+    <string name="name_missing">Name is missing</string>
+    <string name="txt_details">Details</string>
+    <string name="back_discription">Back arrow</string>
+    <string name="txt_moves_title">Moves</string>
 </resources>

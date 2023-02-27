@@ -9,21 +9,21 @@ import com.example.pokemonster.io.local.entities.PokemonStatEntity
 import com.example.pokemonster.repository.PokemonRepository
 import com.example.pokemonster.repository.states.Results
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 @HiltViewModel
 class PokemonViewModel @Inject constructor(
-   private val pokemonRepository: PokemonRepository
-): ViewModel() {
+    private val pokemonRepository: PokemonRepository
+) : ViewModel() {
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-             getAllPokemon().collect{ result ->
-                 updatePokemonList(result)
-             }
+            getAllPokemon().collect { result ->
+                updatePokemonList(result)
+            }
         }
     }
 
@@ -39,16 +39,14 @@ class PokemonViewModel @Inject constructor(
 
     private fun updatePokemonList(result: Results<List<PokemonEntity>>) {
         viewModelScope.launch {
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 when (result) {
                     is Results.Loading -> {
-
                     }
                     is Results.Success -> {
                         pokemons.value = result.data
                     }
                     is Results.OnError -> {
-
                     }
                 }
             }
@@ -57,7 +55,7 @@ class PokemonViewModel @Inject constructor(
 
     fun getMoveDetails(move: PokemonMoveEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            pokemonRepository.getMoveDetails(move.moveRemoteId).collect{ moveState ->
+            pokemonRepository.getMoveDetails(move.moveRemoteId).collect { moveState ->
                 when (moveState) {
                     is Results.Loading -> {
                         selectedMoveEffect.value = "Loading..."
@@ -79,7 +77,7 @@ class PokemonViewModel @Inject constructor(
 
     fun searchPokemon(searchName: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (!searchName.isBlank()){
+            if (!searchName.isBlank()) {
                 pokemonRepository.searchPokemon(searchName).collect { results ->
                     updatePokemonList(results)
                 }
@@ -92,12 +90,12 @@ class PokemonViewModel @Inject constructor(
     }
 
     suspend fun getPokemonStates(pokemonId: Int) {
-        pokemonRepository.getPokemonStates(pokemonId).collect{ stats ->
+        pokemonRepository.getPokemonStates(pokemonId).collect { stats ->
             pokemonStats.value = stats
         }
     }
 
-    suspend fun getPokemonMoves(pokemonId: Int){
+    suspend fun getPokemonMoves(pokemonId: Int) {
         pokemonRepository.getPokemonMoves(pokemonId).collect { moves ->
             pokemonMoves.value = moves
         }

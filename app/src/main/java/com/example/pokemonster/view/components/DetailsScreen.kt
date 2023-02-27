@@ -12,10 +12,12 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.pokemonster.R
 import com.example.pokemonster.viewmodel.PokemonViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,8 +30,8 @@ fun DetailsScreen(
     name: String?,
     imageUrl: String?,
     pokemonViewModel: PokemonViewModel = hiltViewModel()
-){
-    LaunchedEffect("DetailsScreen${pokemonId}"){
+) {
+    LaunchedEffect("DetailsScreen$pokemonId") {
         pokemonId?.let {
             CoroutineScope(Dispatchers.Default).launch {
                 pokemonViewModel.getPokemonMoves(it)
@@ -60,11 +62,13 @@ private fun PokemonDetailsContent(
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back arrow", modifier = Modifier.clickable {
+                    contentDescription = stringResource(R.string.back_discription),
+                    modifier = Modifier.clickable {
                         navController.popBackStack()
-                    })
+                    }
+                )
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(text = name ?: "Details")
+                Text(text = name ?: stringResource(R.string.txt_details))
             }
         }
     }) { paddingValues ->
@@ -85,14 +89,15 @@ private fun PokemonDetailsContent(
                 contentDescription = null
             )
             Text(
-                text = name ?: "Name is missing",
+                text = name ?: stringResource(R.string.name_missing),
                 style = MaterialTheme.typography.h4
             )
 
             LazyRow(content = {
                 items(items = pokemonViewModel.pokemonStats.value) {
                     Card(
-                        elevation = 1.dp, modifier = Modifier
+                        elevation = 1.dp,
+                        modifier = Modifier
                             .padding(8.dp)
                     ) {
                         Column(
@@ -119,23 +124,25 @@ private fun PokemonDetailsContent(
                                 )
                             )
                         }
-
                     }
                 }
             })
 
-            Text(text = "moves", style = MaterialTheme.typography.subtitle1)
+            Text(text = stringResource(R.string.txt_moves_title), style = MaterialTheme.typography.subtitle1)
             LazyRow(content = {
                 items(items = pokemonViewModel.pokemonMoves.value) { move ->
-                    Card(elevation = 1.dp, modifier = Modifier
-                        .padding(8.dp)
-                        .clickable {
-                            pokemonViewModel.selectedMoveName.value = move.name
-                            pokemonViewModel.selectedMoveEffect.value = move.effect ?: ""
-                            if (pokemonViewModel.selectedMoveEffect.value.isBlank()) {
-                                pokemonViewModel.getMoveDetails(move)
+                    Card(
+                        elevation = 1.dp,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .clickable {
+                                pokemonViewModel.selectedMoveName.value = move.name
+                                pokemonViewModel.selectedMoveEffect.value = move.effect ?: ""
+                                if (pokemonViewModel.selectedMoveEffect.value.isBlank()) {
+                                    pokemonViewModel.getMoveDetails(move)
+                                }
                             }
-                        }) {
+                    ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 text = move.name, style = MaterialTheme.typography.h6,

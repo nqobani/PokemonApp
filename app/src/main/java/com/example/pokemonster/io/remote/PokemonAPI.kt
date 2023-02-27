@@ -13,4 +13,3 @@ interface PokemonAPI {
     @GET("move/{id}/")
     suspend fun getMoveDetails(@Path("id") id: Int): Response<com.example.pokemonster.io.remote.models.moves.MoveResponse>
 }
-
