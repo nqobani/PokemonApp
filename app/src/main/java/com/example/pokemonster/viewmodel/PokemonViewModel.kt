@@ -20,14 +20,12 @@ class PokemonViewModel @Inject constructor(
 ) : ViewModel() {
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            getAllPokemon().collect { result ->
-                updatePokemonList(result)
-            }
-        }
+        showAllPokemon()
     }
 
     var pokemons = mutableStateOf<List<PokemonEntity>>(listOf())
+
+    var pokemonInDetailsView = mutableStateOf<PokemonEntity?>(null)
 
     var pokemonStats = mutableStateOf<List<PokemonStatEntity>>(listOf())
 
@@ -37,16 +35,23 @@ class PokemonViewModel @Inject constructor(
 
     var selectedMoveEffect = mutableStateOf("")
 
+    var isLoading = mutableStateOf(false)
+
+    var showingFavorite = mutableStateOf(false)
+
     private fun updatePokemonList(result: Results<List<PokemonEntity>>) {
         viewModelScope.launch {
             withContext(Dispatchers.Main) {
                 when (result) {
                     is Results.Loading -> {
+                        isLoading.value = true
                     }
                     is Results.Success -> {
                         pokemons.value = result.data
+                        isLoading.value = false
                     }
                     is Results.OnError -> {
+                        isLoading.value = false
                     }
                 }
             }
@@ -73,7 +78,21 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
+    fun showAllPokemon() {
+        viewModelScope.launch(Dispatchers.IO) {
+            getAllPokemon().collect { result ->
+                updatePokemonList(result)
+            }
+        }
+    }
+
     private fun getAllPokemon() = pokemonRepository.getAllPokemon()
+
+    fun updatePokemon(pokemonEntity: PokemonEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            pokemonRepository.updatePokemon(pokemonEntity)
+        }
+    }
 
     fun searchPokemon(searchName: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -84,6 +103,33 @@ class PokemonViewModel @Inject constructor(
             } else {
                 getAllPokemon().collect { result ->
                     updatePokemonList(result)
+                }
+            }
+        }
+    }
+
+    fun showFavoritePokemon() {
+        viewModelScope.launch(Dispatchers.IO) {
+            pokemonRepository.getAllFavoritePokemon().collect { result ->
+                updatePokemonList(result)
+            }
+        }
+    }
+
+    fun getPokemonById(id: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            pokemonRepository.getPokemonById(id).collect { result ->
+                when (result) {
+                    is Results.Loading -> {
+                        isLoading.value = true
+                    }
+                    is Results.Success -> {
+                        pokemonInDetailsView.value = result.data
+                        isLoading.value = false
+                    }
+                    is Results.OnError -> {
+                        isLoading.value = false
+                    }
                 }
             }
         }

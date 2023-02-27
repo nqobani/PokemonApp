@@ -16,6 +16,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.collect
 import retrofit2.HttpException
 
 private const val SOMETHING_WENT_WRONG = "Something went wrong"
@@ -23,6 +24,10 @@ private const val SOMETHING_WENT_WRONG = "Something went wrong"
 private const val UNABLE_TO_GET_MOVE_DETAILS = "Unable to get move details"
 
 private const val MOVE_NOT_FOUND = "Move not found"
+
+private const val POKEMON_NOT_FOUND = "Pokemon not found"
+
+private const val UNABLE_TO_GET_POKEMON = "Unable to get pokemon"
 
 class PokemonRepositoryImpl @Inject constructor(
     private val pokemonAPI: PokemonAPI,
@@ -37,6 +42,16 @@ class PokemonRepositoryImpl @Inject constructor(
                 } else {
                     sharedFlow.emit(Results.Success(pokemons))
                 }
+            }
+        }
+        return sharedFlow
+    }
+
+    override fun getPokemonById(id: Int): SharedFlow<Results<PokemonEntity>> {
+        val sharedFlow = MutableSharedFlow<Results<PokemonEntity>>()
+        CoroutineScope(Dispatchers.Default).launch {
+            pokemonDatabase.pokemonDao().getPokemonById(id).collect { pokemon ->
+                sharedFlow.emit(Results.Success(pokemon))
             }
         }
         return sharedFlow
@@ -75,9 +90,9 @@ class PokemonRepositoryImpl @Inject constructor(
                         }
                     } else {
                         if (response.code() == 404) {
-                            sharedFlow.emit(Results.OnError(Exception("Pokemon not found")))
+                            sharedFlow.emit(Results.OnError(Exception(POKEMON_NOT_FOUND)))
                         } else {
-                            sharedFlow.emit(Results.OnError(Exception("brrrrrrr")))
+                            sharedFlow.emit(Results.OnError(Exception(UNABLE_TO_GET_POKEMON)))
                         }
                     }
                 } catch (e: HttpException) {
@@ -132,9 +147,25 @@ class PokemonRepositoryImpl @Inject constructor(
         return call.await()
     }
 
+    override suspend fun getAllFavoritePokemon(): SharedFlow<Results<List<PokemonEntity>>> {
+        val sharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+        CoroutineScope(Dispatchers.Default).launch {
+            pokemonDatabase.pokemonDao().getFavoritePokemon().collect { pokemons ->
+                sharedFlow.emit(Results.Success(pokemons))
+            }
+        }
+        return sharedFlow
+    }
+
     override fun setMoveDescription(pokemonMoveEntity: PokemonMoveEntity) {
         CoroutineScope(Dispatchers.IO).launch {
             pokemonDatabase.pokemonDao().setMoveEffectDescription(pokemonMoveEntity)
+        }
+    }
+
+    override fun updatePokemon(pokemonEntity: PokemonEntity) {
+        CoroutineScope(Dispatchers.IO).launch {
+            pokemonDatabase.pokemonDao().updatePokemon(pokemonEntity)
         }
     }
 }

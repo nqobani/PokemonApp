@@ -1,7 +1,6 @@
 package com.example.pokemonster.io.local
 
 import androidx.room.*
-import com.example.pokemonster.io.local.entities.FavoritePokemonsEntity
 import com.example.pokemonster.io.local.entities.PokemonEntity
 import com.example.pokemonster.io.local.entities.PokemonMoveEntity
 import com.example.pokemonster.io.local.entities.PokemonStatEntity
@@ -16,28 +15,26 @@ interface PokemonDao {
     @Query("SELECT * FROM tblPokemon WHERE name LIKE :query")
     fun searchPokemons(query: String): Flow<List<PokemonEntity>>
 
+    @Query("SELECT * FROM tblPokemon WHERE id = :id")
+    fun getPokemonById(id: Int): Flow<PokemonEntity>
+
+    @Query("SELECT * FROM tblPokemon WHERE isFavorite = true")
+    fun getFavoritePokemon(): Flow<List<PokemonEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllPokemons(vararg pokemonEntity: PokemonEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPokemon(pokemonEntity: PokemonEntity)
 
+    @Update(PokemonEntity::class, onConflict = OnConflictStrategy.REPLACE)
+    fun updatePokemon(pokemonEntity: PokemonEntity)
+
     @Delete
     fun deletePokemon(pokemonEntity: PokemonEntity)
 
     @Delete
     fun deleteAllPokemon(vararg pokemonEntity: PokemonEntity)
-
-    // /////////////////////FAVORITE/////////////////////////
-
-    @Query("SELECT tblPokemon.id, tblPokemon.name, tblPokemon.imageUrl FROM tblPokemon LEFT JOIN tblFavorite ON tblPokemon.id = tblFavorite.pokemonId")
-    fun getFavoritePokemons(): Flow<PokemonEntity>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addFavorite(favoritePokemonsEntity: FavoritePokemonsEntity)
-
-    @Delete
-    fun removeFromFavorite(favoritePokemonsEntity: FavoritePokemonsEntity)
     // /////////////////////STAT//////////////////////////
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

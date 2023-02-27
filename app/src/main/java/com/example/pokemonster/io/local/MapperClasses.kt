@@ -11,7 +11,8 @@ fun PokemonResponse.toPokemonEntity(): PokemonEntity {
     return PokemonEntity(
         id = this.id,
         name = this.name,
-        imageUrl = this.sprites.other.officialArtwork.front_default
+        imageUrl = this.sprites.other.officialArtwork.front_default,
+        isFavorite = false
     )
 }
 

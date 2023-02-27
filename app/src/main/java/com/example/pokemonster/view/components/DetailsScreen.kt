@@ -9,9 +9,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -38,6 +40,9 @@ fun DetailsScreen(
             }
             CoroutineScope(Dispatchers.Default).launch {
                 pokemonViewModel.getPokemonStates(it)
+            }
+            CoroutineScope(Dispatchers.Default).launch {
+                pokemonViewModel.getPokemonById(it)
             }
         }
     }
@@ -69,6 +74,21 @@ private fun PokemonDetailsContent(
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(text = name ?: stringResource(R.string.txt_details))
+                Spacer(modifier = Modifier.width(16.dp))
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = stringResource(R.string.back_discription),
+                    tint = if (pokemonViewModel.pokemonInDetailsView.value?.isFavorite == true) {
+                        Color(0xFF3B8132)
+                    } else {
+                        Color(0xFFCCE7C9)
+                    },
+                    modifier = Modifier.clickable {
+                        pokemonViewModel.pokemonInDetailsView.value?.let { pokemon ->
+                            pokemonViewModel.updatePokemon(pokemon.copy(isFavorite = !pokemon.isFavorite))
+                        }
+                    }
+                )
             }
         }
     }) { paddingValues ->
