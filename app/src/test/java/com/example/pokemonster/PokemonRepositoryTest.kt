@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.example.pokemonster
 
 import app.cash.turbine.test
@@ -6,6 +8,7 @@ import com.example.pokemonster.io.local.entities.PokemonEntity
 import com.example.pokemonster.io.remote.PokemonAPI
 import com.example.pokemonster.repository.PokemonRepositoryImpl
 import com.example.pokemonster.repository.states.Results
+import io.mockk.MockK
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -15,7 +18,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-@OptIn(ExperimentalCoroutinesApi::class)
 class PokemonRepositoryTest {
     val pokemonApi: PokemonAPI = mockk()
     val pokemonDatabase: PokemonDatabase = mockk()
