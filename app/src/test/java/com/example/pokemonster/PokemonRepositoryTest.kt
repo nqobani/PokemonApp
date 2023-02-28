@@ -8,7 +8,6 @@ import com.example.pokemonster.io.local.entities.PokemonEntity
 import com.example.pokemonster.io.remote.PokemonAPI
 import com.example.pokemonster.repository.PokemonRepositoryImpl
 import com.example.pokemonster.repository.states.Results
-import io.mockk.MockK
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow

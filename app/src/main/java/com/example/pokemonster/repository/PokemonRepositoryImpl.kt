@@ -79,12 +79,14 @@ class PokemonRepositoryImpl @Inject constructor(
                     val response = call.await()
                     if (response.isSuccessful && response.body() != null) {
                         withContext(Dispatchers.IO) {
-                            pokemonDatabase.pokemonDao().insertPokemon(response.body()!!.toPokemonEntity())
-                            response.body()!!.stats.forEach { stat ->
-                                pokemonDatabase.pokemonDao().insertPokemonState(stat.toStateEntity(response.body()!!.id))
-                            }
-                            response.body()!!.moves.forEach { move ->
-                                pokemonDatabase.pokemonDao().insertPokemonMove(move.toMoveEntity(response.body()!!.id))
+                            response.body()?.let { responseBody ->
+                                pokemonDatabase.pokemonDao().insertPokemon(responseBody.toPokemonEntity())
+                                response.body()?.stats?.forEach { stat ->
+                                    pokemonDatabase.pokemonDao().insertPokemonState(stat.toStateEntity(responseBody.id))
+                                }
+                                response.body()?.moves?.forEach { move ->
+                                    pokemonDatabase.pokemonDao().insertPokemonMove(move.toMoveEntity(responseBody.id))
+                                }
                             }
                         }
                     } else {
