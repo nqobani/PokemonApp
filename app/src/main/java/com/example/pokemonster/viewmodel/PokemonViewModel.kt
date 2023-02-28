@@ -6,11 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.pokemonster.io.local.entities.PokemonEntity
 import com.example.pokemonster.io.local.entities.PokemonMoveEntity
 import com.example.pokemonster.io.local.entities.PokemonStatEntity
+import com.example.pokemonster.io.remote.models.moves.MoveResponse
 import com.example.pokemonster.repository.PokemonRepository
 import com.example.pokemonster.repository.states.Results
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -60,7 +63,9 @@ class PokemonViewModel @Inject constructor(
 
     fun getMoveDetails(move: PokemonMoveEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            pokemonRepository.getMoveDetails(move.moveRemoteId).collect { moveState ->
+            val mutableSharedFlow = MutableSharedFlow<Results<MoveResponse>>()
+            pokemonRepository.getMoveDetails(move.moveRemoteId, mutableSharedFlow)
+            mutableSharedFlow.collect { moveState ->
                 when (moveState) {
                     is Results.Loading -> {
                         selectedMoveEffect.value = "Loading..."
@@ -80,13 +85,13 @@ class PokemonViewModel @Inject constructor(
 
     fun showAllPokemon() {
         viewModelScope.launch(Dispatchers.IO) {
-            getAllPokemon().collect { result ->
+            val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+            pokemonRepository.getAllPokemon(mutableSharedFlow)
+            mutableSharedFlow.collect { result ->
                 updatePokemonList(result)
             }
         }
     }
-
-    private fun getAllPokemon() = pokemonRepository.getAllPokemon()
 
     fun updatePokemon(pokemonEntity: PokemonEntity) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -96,21 +101,23 @@ class PokemonViewModel @Inject constructor(
 
     fun searchPokemon(searchName: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
             if (!searchName.isBlank()) {
-                pokemonRepository.searchPokemon(searchName).collect { results ->
-                    updatePokemonList(results)
-                }
+                pokemonRepository.searchPokemon(searchName, mutableSharedFlow)
             } else {
-                getAllPokemon().collect { result ->
-                    updatePokemonList(result)
-                }
+                pokemonRepository.getAllPokemon(mutableSharedFlow)
+            }
+            mutableSharedFlow.collect { result ->
+                updatePokemonList(result)
             }
         }
     }
 
     fun showFavoritePokemon() {
         viewModelScope.launch(Dispatchers.IO) {
-            pokemonRepository.getAllFavoritePokemon().collect { result ->
+            val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+            pokemonRepository.getAllFavoritePokemon(mutableSharedFlow)
+            mutableSharedFlow.collect { result ->
                 updatePokemonList(result)
             }
         }
@@ -118,7 +125,9 @@ class PokemonViewModel @Inject constructor(
 
     fun getPokemonById(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            pokemonRepository.getPokemonById(id).collect { result ->
+            val mutableSharedFlow = MutableSharedFlow<Results<PokemonEntity>>()
+            pokemonRepository.getPokemonById(id, mutableSharedFlow)
+            mutableSharedFlow.collect { result ->
                 when (result) {
                     is Results.Loading -> {
                         isLoading.value = true

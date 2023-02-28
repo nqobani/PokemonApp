@@ -15,7 +15,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collect
 import retrofit2.HttpException
 
@@ -33,38 +32,38 @@ class PokemonRepositoryImpl @Inject constructor(
     private val pokemonAPI: PokemonAPI,
     private val pokemonDatabase: PokemonDatabase
 ) : PokemonRepository {
-    override fun getAllPokemon(): SharedFlow<Results<List<PokemonEntity>>> {
-        val sharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+    override fun getAllPokemon(mutableSharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>) {
         CoroutineScope(Dispatchers.Default).launch {
             pokemonDatabase.pokemonDao().getAllPokemons().collect { pokemons ->
                 if (pokemons.isEmpty()) {
-                    getRemotePokemonAndCache(sharedFlow)
+                    getRemotePokemonAndCache(mutableSharedFlow)
                 } else {
-                    sharedFlow.emit(Results.Success(pokemons))
+                    mutableSharedFlow.emit(Results.Success(pokemons))
                 }
             }
         }
-        return sharedFlow
     }
 
-    override fun getPokemonById(id: Int): SharedFlow<Results<PokemonEntity>> {
-        val sharedFlow = MutableSharedFlow<Results<PokemonEntity>>()
+    override fun getPokemonById(
+        id: Int,
+        mutableSharedFlow: MutableSharedFlow<Results<PokemonEntity>>
+    ) {
         CoroutineScope(Dispatchers.Default).launch {
             pokemonDatabase.pokemonDao().getPokemonById(id).collect { pokemon ->
-                sharedFlow.emit(Results.Success(pokemon))
+                mutableSharedFlow.emit(Results.Success(pokemon))
             }
         }
-        return sharedFlow
     }
 
-    override fun searchPokemon(searchName: String): SharedFlow<Results<List<PokemonEntity>>> {
-        val sharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+    override fun searchPokemon(
+        searchName: String,
+        mutableSharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>
+    ) {
         CoroutineScope(Dispatchers.Default).launch {
             pokemonDatabase.pokemonDao().searchPokemons("$searchName%").collect { pokemons ->
-                sharedFlow.emit(Results.Success(pokemons))
+                mutableSharedFlow.emit(Results.Success(pokemons))
             }
         }
-        return sharedFlow
     }
 
     private fun getRemotePokemonAndCache(
@@ -109,28 +108,27 @@ class PokemonRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getMoveDetails(id: Int): SharedFlow<Results<MoveResponse>> {
-        val sharedFlow = MutableSharedFlow<Results<MoveResponse>>()
+    override fun getMoveDetails(
+        id: Int,
+        mutableSharedFlow: MutableSharedFlow<Results<MoveResponse>>
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
-            sharedFlow.emit(Results.Loading)
-            withContext(Dispatchers.Main) {
-                try {
-                    val response = pokemonAPI.getMoveDetails(id)
-                    if (response.isSuccessful && response.body() != null) {
-                        sharedFlow.emit(Results.Success(response.body()!!))
+            mutableSharedFlow.emit(Results.Loading)
+            try {
+                val response = pokemonAPI.getMoveDetails(id)
+                if (response.isSuccessful && response.body() != null) {
+                    mutableSharedFlow.emit(Results.Success(response.body()!!))
+                } else {
+                    if (response.code() == 404) {
+                        mutableSharedFlow.emit(Results.OnError(Exception(MOVE_NOT_FOUND)))
                     } else {
-                        if (response.code() == 404) {
-                            sharedFlow.emit(Results.OnError(Exception(MOVE_NOT_FOUND)))
-                        } else {
-                            sharedFlow.emit(Results.OnError(Exception(UNABLE_TO_GET_MOVE_DETAILS)))
-                        }
+                        mutableSharedFlow.emit(Results.OnError(Exception(UNABLE_TO_GET_MOVE_DETAILS)))
                     }
-                } catch (e: java.lang.Exception) {
-                    sharedFlow.emit(Results.OnError(Exception(SOMETHING_WENT_WRONG)))
                 }
+            } catch (e: java.lang.Exception) {
+                mutableSharedFlow.emit(Results.OnError(Exception(SOMETHING_WENT_WRONG)))
             }
         }
-        return sharedFlow
     }
 
     override suspend fun getPokemonStates(pokemonId: Int): Flow<List<PokemonStatEntity>> {
@@ -147,14 +145,14 @@ class PokemonRepositoryImpl @Inject constructor(
         return call.await()
     }
 
-    override suspend fun getAllFavoritePokemon(): SharedFlow<Results<List<PokemonEntity>>> {
-        val sharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+    override suspend fun getAllFavoritePokemon(
+        mutableSharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>
+    ) {
         CoroutineScope(Dispatchers.Default).launch {
             pokemonDatabase.pokemonDao().getFavoritePokemon().collect { pokemons ->
-                sharedFlow.emit(Results.Success(pokemons))
+                mutableSharedFlow.emit(Results.Success(pokemons))
             }
         }
-        return sharedFlow
     }
 
     override fun setMoveDescription(pokemonMoveEntity: PokemonMoveEntity) {
