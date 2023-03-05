@@ -25,6 +25,7 @@ class HomeScreenTest {
 
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
+
     @Inject
     lateinit var db: PokemonDatabase
     lateinit var pokmonList: ArrayList<PokemonEntity>
@@ -35,13 +36,48 @@ class HomeScreenTest {
     fun setUp() {
         hiltRule.inject()
         pokmonList = arrayListOf(
-            PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(2, "efg", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(3, "hij", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(4, "klm", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(5, "nop", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(6, "qrs", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png")
+            PokemonEntity(
+                1,
+                "abc",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                1,
+                "abc",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                2,
+                "efg",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                3,
+                "hij",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                4,
+                "klm",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                5,
+                "nop",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                6,
+                "qrs",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            )
         )
 
         pokmonStateList = arrayListOf(
@@ -81,13 +117,48 @@ class HomeScreenTest {
         )
 
         db.pokemonDao().insertAllPokemons(
-            PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(1, "abc", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(2, "efg", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(3, "hij", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(4, "klm", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(5, "nop", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-            PokemonEntity(6, "qrs", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png")
+            PokemonEntity(
+                1,
+                "abc",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                1,
+                "abc",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                2,
+                "efg",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                3,
+                "hij",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                4,
+                "klm",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                5,
+                "nop",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            ),
+            PokemonEntity(
+                6,
+                "qrs",
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
+                false
+            )
         )
 
         db.pokemonDao().insertAllStates(
@@ -144,6 +215,13 @@ class HomeScreenTest {
             composeRule.activity.getString(R.string.search_placeholder)
         ).performTextInput(pokmonList[1].name)
 
+        composeRule.onAllNodes(
+            hasText(pokmonList[1].name)
+        )[1].assertExists()
+    }
+
+    @Test
+    fun getsAllThePokmons() {
         composeRule.onAllNodes(
             hasText(pokmonList[1].name)
         )[1].assertExists()

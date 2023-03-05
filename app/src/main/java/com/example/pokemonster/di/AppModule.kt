@@ -22,7 +22,8 @@ object AppModule {
     @Provides
     fun providePokemonDatabase(@ApplicationContext applicationContext: Context) = Room.databaseBuilder(
         applicationContext,
-        PokemonDatabase::class.java, "pokemon_db"
+        PokemonDatabase::class.java,
+        "pokemon_db"
     ).build()
 
     @Provides

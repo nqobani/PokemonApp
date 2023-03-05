@@ -71,7 +71,7 @@ class PokemonRepositoryImpl @Inject constructor(
     ) {
         CoroutineScope(Dispatchers.Default).launch {
             sharedFlow.emit(Results.Loading)
-            for (i in 1..100) {
+            for (i in 1..100) { // TODO: 100
                 val call = async(Dispatchers.IO) {
                     pokemonAPI.getPokemon(i)
                 }
@@ -80,12 +80,18 @@ class PokemonRepositoryImpl @Inject constructor(
                     if (response.isSuccessful && response.body() != null) {
                         withContext(Dispatchers.IO) {
                             response.body()?.let { responseBody ->
-                                pokemonDatabase.pokemonDao().insertPokemon(responseBody.toPokemonEntity())
+                                pokemonDatabase.pokemonDao().insertPokemon(
+                                    responseBody.toPokemonEntity()
+                                )
                                 response.body()?.stats?.forEach { stat ->
-                                    pokemonDatabase.pokemonDao().insertPokemonState(stat.toStateEntity(responseBody.id))
+                                    pokemonDatabase.pokemonDao().insertPokemonState(
+                                        stat.toStateEntity(responseBody.id)
+                                    )
                                 }
                                 response.body()?.moves?.forEach { move ->
-                                    pokemonDatabase.pokemonDao().insertPokemonMove(move.toMoveEntity(responseBody.id))
+                                    pokemonDatabase.pokemonDao().insertPokemonMove(
+                                        move.toMoveEntity(responseBody.id)
+                                    )
                                 }
                             }
                         }
@@ -124,7 +130,9 @@ class PokemonRepositoryImpl @Inject constructor(
                     if (response.code() == 404) {
                         mutableSharedFlow.emit(Results.OnError(Exception(MOVE_NOT_FOUND)))
                     } else {
-                        mutableSharedFlow.emit(Results.OnError(Exception(UNABLE_TO_GET_MOVE_DETAILS)))
+                        mutableSharedFlow.emit(
+                            Results.OnError(Exception(UNABLE_TO_GET_MOVE_DETAILS))
+                        )
                     }
                 }
             } catch (e: java.lang.Exception) {

@@ -13,7 +13,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -23,7 +22,7 @@ class PokemonViewModel @Inject constructor(
 ) : ViewModel() {
 
     init {
-        showAllPokemon()
+        getAllPokemon()
     }
 
     var pokemons = mutableStateOf<List<PokemonEntity>>(listOf())
@@ -55,6 +54,7 @@ class PokemonViewModel @Inject constructor(
                     }
                     is Results.OnError -> {
                         isLoading.value = false
+                        // TODO trigger onError UI
                     }
                 }
             }
@@ -83,7 +83,7 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
-    fun showAllPokemon() {
+    fun getAllPokemon() {
         viewModelScope.launch(Dispatchers.IO) {
             val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
             pokemonRepository.getAllPokemon(mutableSharedFlow)
@@ -156,5 +156,7 @@ class PokemonViewModel @Inject constructor(
         }
     }
 
-    private fun setMoveDescription(pokemonMoveEntity: PokemonMoveEntity) = pokemonRepository.setMoveDescription(pokemonMoveEntity)
+    private fun setMoveDescription(pokemonMoveEntity: PokemonMoveEntity) = pokemonRepository.setMoveDescription(
+        pokemonMoveEntity
+    )
 }

@@ -24,6 +24,7 @@ fun HomeScreen(navController: NavController, pokemonViewModel: PokemonViewModel 
     Scaffold(topBar = {
         TopAppBar(backgroundColor = MaterialTheme.colors.background, elevation = 4.dp) {
             Text(text = stringResource(R.string.home_title))
+
             Icon(
                 imageVector = Icons.Default.Star,
                 contentDescription = stringResource(R.string.back_discription),
@@ -37,7 +38,7 @@ fun HomeScreen(navController: NavController, pokemonViewModel: PokemonViewModel 
                     if (pokemonViewModel.showingFavorite.value) {
                         pokemonViewModel.showFavoritePokemon()
                     } else {
-                        pokemonViewModel.showAllPokemon()
+                        pokemonViewModel.getAllPokemon()
                     }
                 }
             )
@@ -67,16 +68,20 @@ fun HomeContent(
                 .fillMaxWidth()
                 .padding(end = 16.dp, start = 16.dp),
             placeholder = { Text(text = stringResource(R.string.search_placeholder)) },
-            value = searchText, onValueChange = { value ->
+            value = searchText,
+            onValueChange = { value ->
                 searchText = value
                 pokemonViewModel.searchPokemon(value.text)
-            }, maxLines = 1
+            },
+            maxLines = 1
         )
         Spacer(modifier = Modifier.padding(8.dp))
         LazyColumn(modifier = Modifier.fillMaxWidth(), content = {
             items(pokemonViewModel.pokemons.value) {
                 PokemonCard(it) { id, name, imageUrl ->
-                    navController.navigate(route = PokemonScreens.DetailsScreen.name + "/$id/$name?imageUrl=$imageUrl")
+                    navController.navigate(
+                        route = PokemonScreens.DetailsScreen.name + "/$id/$name?imageUrl=$imageUrl"
+                    )
                 }
             }
         })

@@ -85,7 +85,9 @@ private fun PokemonDetailsContent(
                     },
                     modifier = Modifier.clickable {
                         pokemonViewModel.pokemonInDetailsView.value?.let { pokemon ->
-                            pokemonViewModel.updatePokemon(pokemon.copy(isFavorite = !pokemon.isFavorite))
+                            pokemonViewModel.updatePokemon(
+                                pokemon.copy(isFavorite = !pokemon.isFavorite)
+                            )
                         }
                     }
                 )
@@ -126,7 +128,8 @@ private fun PokemonDetailsContent(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = it.name, style = MaterialTheme.typography.overline,
+                                text = it.name,
+                                style = MaterialTheme.typography.overline,
                                 modifier = Modifier.padding(
                                     start = 16.dp,
                                     end = 16.dp,
@@ -135,7 +138,8 @@ private fun PokemonDetailsContent(
                                 )
                             )
                             Text(
-                                text = it.base_stat.toString(), style = MaterialTheme.typography.h5,
+                                text = it.base_stat.toString(),
+                                style = MaterialTheme.typography.h5,
                                 modifier = Modifier.padding(
                                     start = 16.dp,
                                     end = 16.dp,
@@ -148,7 +152,10 @@ private fun PokemonDetailsContent(
                 }
             })
 
-            Text(text = stringResource(R.string.txt_moves_title), style = MaterialTheme.typography.subtitle1)
+            Text(
+                text = stringResource(R.string.txt_moves_title),
+                style = MaterialTheme.typography.subtitle1
+            )
             LazyRow(content = {
                 items(items = pokemonViewModel.pokemonMoves.value) { move ->
                     Card(
@@ -165,7 +172,8 @@ private fun PokemonDetailsContent(
                     ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                text = move.name, style = MaterialTheme.typography.h6,
+                                text = move.name,
+                                style = MaterialTheme.typography.h6,
                                 modifier = Modifier.padding(
                                     start = 16.dp,
                                     end = 16.dp,
