@@ -20,7 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.pokemonster.R
-import com.example.pokemonster.viewmodel.PokemonViewModel
+import com.example.pokemonster.viewmodel.DetailsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,18 +31,18 @@ fun DetailsScreen(
     pokemonId: Int?,
     name: String?,
     imageUrl: String?,
-    pokemonViewModel: PokemonViewModel = hiltViewModel()
+    detailsViewModel: DetailsViewModel = hiltViewModel()
 ) {
     LaunchedEffect("DetailsScreen$pokemonId") {
         pokemonId?.let {
             CoroutineScope(Dispatchers.Default).launch {
-                pokemonViewModel.getPokemonMoves(it)
+                detailsViewModel.getPokemonMoves(it)
             }
             CoroutineScope(Dispatchers.Default).launch {
-                pokemonViewModel.getPokemonStates(it)
+                detailsViewModel.getPokemonStats(it)
             }
             CoroutineScope(Dispatchers.Default).launch {
-                pokemonViewModel.getPokemonById(it)
+                detailsViewModel.getPokemonById(it)
             }
         }
     }
@@ -57,10 +57,9 @@ fun DetailsScreen(
 private fun PokemonDetailsContent(
     navController: NavController,
     name: String?,
-    imageUrl: String?
+    imageUrl: String?,
+    detailsViewModel: DetailsViewModel = hiltViewModel()
 ) {
-    val pokemonViewModel: PokemonViewModel = hiltViewModel()
-
     Scaffold(topBar = {
         TopAppBar(backgroundColor = MaterialTheme.colors.background, elevation = 4.dp) {
             Row(horizontalArrangement = Arrangement.Start) {
@@ -78,14 +77,14 @@ private fun PokemonDetailsContent(
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = stringResource(R.string.back_discription),
-                    tint = if (pokemonViewModel.pokemonInDetailsView.value?.isFavorite == true) {
+                    tint = if (detailsViewModel.pokemonInDetailsView.value?.isFavorite == true) {
                         Color(0xFF3B8132)
                     } else {
                         Color(0xFFCCE7C9)
                     },
                     modifier = Modifier.clickable {
-                        pokemonViewModel.pokemonInDetailsView.value?.let { pokemon ->
-                            pokemonViewModel.updatePokemon(
+                        detailsViewModel.pokemonInDetailsView.value?.let { pokemon ->
+                            detailsViewModel.updatePokemon(
                                 pokemon.copy(isFavorite = !pokemon.isFavorite)
                             )
                         }
@@ -116,7 +115,7 @@ private fun PokemonDetailsContent(
             )
 
             LazyRow(content = {
-                items(items = pokemonViewModel.pokemonStats.value) {
+                items(items = detailsViewModel.pokemonStats.value) {
                     Card(
                         elevation = 1.dp,
                         modifier = Modifier
@@ -157,16 +156,16 @@ private fun PokemonDetailsContent(
                 style = MaterialTheme.typography.subtitle1
             )
             LazyRow(content = {
-                items(items = pokemonViewModel.pokemonMoves.value) { move ->
+                items(items = detailsViewModel.pokemonMoves.value) { move ->
                     Card(
                         elevation = 1.dp,
                         modifier = Modifier
                             .padding(8.dp)
                             .clickable {
-                                pokemonViewModel.selectedMoveName.value = move.name
-                                pokemonViewModel.selectedMoveEffect.value = move.effect ?: ""
-                                if (pokemonViewModel.selectedMoveEffect.value.isBlank()) {
-                                    pokemonViewModel.getMoveDetails(move)
+                                detailsViewModel.selectedMoveName.value = move.name
+                                detailsViewModel.selectedMoveEffect.value = move.effect ?: ""
+                                if (detailsViewModel.selectedMoveEffect.value.isBlank()) {
+                                    detailsViewModel.getMoveDetails(move)
                                 }
                             }
                     ) {
@@ -190,8 +189,8 @@ private fun PokemonDetailsContent(
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth(),
-                pokemonViewModel.selectedMoveName.value,
-                pokemonViewModel.selectedMoveEffect.value
+                detailsViewModel.selectedMoveName.value,
+                detailsViewModel.selectedMoveEffect.value
             )
         }
     }

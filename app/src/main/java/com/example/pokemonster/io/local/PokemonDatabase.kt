@@ -12,7 +12,7 @@ import com.example.pokemonster.io.local.entities.PokemonStatEntity
         PokemonMoveEntity::class,
         PokemonStatEntity::class
     ],
-    version = 2
+    version = 1
 )
 abstract class PokemonDatabase : RoomDatabase() {
     abstract fun pokemonDao(): PokemonDao

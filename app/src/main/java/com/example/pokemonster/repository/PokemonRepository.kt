@@ -16,8 +16,12 @@ interface PokemonRepository {
         mutableSharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>
     )
     fun getMoveDetails(id: Int, mutableSharedFlow: MutableSharedFlow<Results<MoveResponse>>)
-    suspend fun getPokemonStates(pokemonId: Int): Flow<List<PokemonStatEntity>>
-    suspend fun getPokemonMoves(pokemonId: Int): Flow<List<PokemonMoveEntity>>
+    suspend fun getPokemonStates(
+        pokemonId: Int
+    ): Flow<List<PokemonStatEntity>>
+    suspend fun getPokemonMoves(
+        pokemonId: Int
+    ): Flow<List<PokemonMoveEntity>>
     suspend fun getAllFavoritePokemon(
         mutableSharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>
     )

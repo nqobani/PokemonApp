@@ -10,37 +10,30 @@ import com.example.pokemonster.io.local.toStateEntity
 import com.example.pokemonster.io.remote.PokemonAPI
 import com.example.pokemonster.io.remote.models.moves.MoveResponse
 import com.example.pokemonster.repository.states.Results
-import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
-import retrofit2.HttpException
-
-private const val SOMETHING_WENT_WRONG = "Something went wrong"
-
-private const val UNABLE_TO_GET_MOVE_DETAILS = "Unable to get move details"
-
-private const val MOVE_NOT_FOUND = "Move not found"
-
-private const val POKEMON_NOT_FOUND = "Pokemon not found"
-
-private const val UNABLE_TO_GET_POKEMON = "Unable to get pokemon"
 
 class PokemonRepositoryImpl @Inject constructor(
     private val pokemonAPI: PokemonAPI,
     private val pokemonDatabase: PokemonDatabase
 ) : PokemonRepository {
     override fun getAllPokemon(mutableSharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>) {
-        CoroutineScope(Dispatchers.Default).launch {
+        var shouldEmitLoadingStatus = false
+        CoroutineScope(Dispatchers.IO).launch {
             pokemonDatabase.pokemonDao().getAllPokemons().collect { pokemons ->
-                if (pokemons.isEmpty()) {
-                    getRemotePokemonAndCache(mutableSharedFlow)
-                } else {
+                val hasCachedPokemon = pokemons.isNotEmpty()
+                shouldEmitLoadingStatus = !hasCachedPokemon
+                if (hasCachedPokemon) {
                     mutableSharedFlow.emit(Results.Success(pokemons))
                 }
             }
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            // Get updated pokemon data from the server and cash it to the local data source
+            getRemotePokemonAndCache(mutableSharedFlow, shouldEmitLoadingStatus)
         }
     }
 
@@ -67,47 +60,48 @@ class PokemonRepositoryImpl @Inject constructor(
     }
 
     private fun getRemotePokemonAndCache(
-        sharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>
+        sharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>,
+        shouldEmitLoadingStatus: Boolean
     ) {
         CoroutineScope(Dispatchers.Default).launch {
-            sharedFlow.emit(Results.Loading)
-            for (i in 1..100) { // TODO: 100
-                val call = async(Dispatchers.IO) {
-                    pokemonAPI.getPokemon(i)
-                }
-                try {
-                    val response = call.await()
-                    if (response.isSuccessful && response.body() != null) {
-                        withContext(Dispatchers.IO) {
-                            response.body()?.let { responseBody ->
-                                pokemonDatabase.pokemonDao().insertPokemon(
-                                    responseBody.toPokemonEntity()
-                                )
-                                response.body()?.stats?.forEach { stat ->
-                                    pokemonDatabase.pokemonDao().insertPokemonState(
-                                        stat.toStateEntity(responseBody.id)
+            if (shouldEmitLoadingStatus) {
+                sharedFlow.emit(Results.Loading)
+            }
+            val pokemonListResponse = pokemonAPI.getPaginatedPokemonList(0, 100)//TODO: use pagination
+            if (pokemonListResponse.isSuccessful) {
+                val pokemons = pokemonListResponse.body()
+                pokemons?.results?.forEach {
+                    val urlSplitData = it.url.split('/')
+                    val id = urlSplitData[urlSplitData.size - 2].toInt() // TODO: Validate id is correct value and avoid OutOfBoundIndexException
+                    val call = async(Dispatchers.IO) {
+                        pokemonAPI.getPokemon(id)
+                    }
+                    try {
+                        val response = call.await()
+                        if (response.isSuccessful) {
+                            withContext(Dispatchers.IO) {
+                                response.body()?.let { responseBody ->
+                                    pokemonDatabase.pokemonDao().insertPokemon(
+                                        responseBody.toPokemonEntity()
                                     )
-                                }
-                                response.body()?.moves?.forEach { move ->
-                                    pokemonDatabase.pokemonDao().insertPokemonMove(
-                                        move.toMoveEntity(responseBody.id)
-                                    )
+                                    response.body()?.stats?.forEach { stat ->
+                                        pokemonDatabase.pokemonDao().insertPokemonState(
+                                            stat.toStateEntity(responseBody.id)
+                                        )
+                                    }
+                                    response.body()?.moves?.forEach { move ->
+                                        pokemonDatabase.pokemonDao().insertPokemonMove(
+                                            move.toMoveEntity(responseBody.id)
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    } else {
-                        if (response.code() == 404) {
-                            sharedFlow.emit(Results.OnError(Exception(POKEMON_NOT_FOUND)))
                         } else {
-                            sharedFlow.emit(Results.OnError(Exception(UNABLE_TO_GET_POKEMON)))
+                            sharedFlow.emit(Results.OnError(Exception(response.message())))
                         }
+                    } catch (e: Throwable) {
+                        sharedFlow.emit(Results.OnError(Exception(e.localizedMessage)))
                     }
-                } catch (e: HttpException) {
-                    sharedFlow.emit(Results.OnError(Exception("unable to load Pokemons")))
-                } catch (e: IOException) {
-                    sharedFlow.emit(Results.OnError(Exception("unable to load Pokemons")))
-                } catch (e: Exception) {
-                    sharedFlow.emit(Results.OnError(Exception("unable to load Pokemons")))
                 }
             }
             pokemonDatabase.pokemonDao().getAllPokemons().collect { pokemons ->
@@ -127,28 +121,26 @@ class PokemonRepositoryImpl @Inject constructor(
                 if (response.isSuccessful && response.body() != null) {
                     mutableSharedFlow.emit(Results.Success(response.body()!!))
                 } else {
-                    if (response.code() == 404) {
-                        mutableSharedFlow.emit(Results.OnError(Exception(MOVE_NOT_FOUND)))
-                    } else {
-                        mutableSharedFlow.emit(
-                            Results.OnError(Exception(UNABLE_TO_GET_MOVE_DETAILS))
-                        )
-                    }
+                    mutableSharedFlow.emit(Results.OnError(Exception(response.message())))
                 }
-            } catch (e: java.lang.Exception) {
-                mutableSharedFlow.emit(Results.OnError(Exception(SOMETHING_WENT_WRONG)))
+            } catch (e: Throwable) {
+                mutableSharedFlow.emit(Results.OnError(Exception(e.localizedMessage)))
             }
         }
     }
 
-    override suspend fun getPokemonStates(pokemonId: Int): Flow<List<PokemonStatEntity>> {
+    override suspend fun getPokemonStates(
+        pokemonId: Int
+    ): Flow<List<PokemonStatEntity>> {
         val call = CoroutineScope(Dispatchers.IO).async {
             pokemonDatabase.pokemonDao().getPokemonStates(pokemonId)
         }
         return call.await()
     }
 
-    override suspend fun getPokemonMoves(pokemonId: Int): Flow<List<PokemonMoveEntity>> {
+    override suspend fun getPokemonMoves(
+        pokemonId: Int
+    ): Flow<List<PokemonMoveEntity>> {
         val call = CoroutineScope(Dispatchers.IO).async {
             pokemonDatabase.pokemonDao().getPokemonMoves(pokemonId)
         }
