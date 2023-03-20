@@ -21,39 +21,61 @@ class PokemonViewModel @Inject constructor(
     init {
         getAllPokemon()
     }
-
     var pokemons = mutableStateOf<List<PokemonEntity>>(listOf())
+        get() {
+            return when (uiState.value) {
+                0 -> {
+                    pokemonsAll
+                }
+                1 -> {
+                    pokemonsSearched
+                }
+                2 -> {
+                    pokemonsFavorite
+                }
+                else -> {
+                    pokemonsAll
+                }
+            }
+        }
+        private set
+
+    var pokemonsFavorite = mutableStateOf<List<PokemonEntity>>(listOf())
+    var pokemonsSearched = mutableStateOf<List<PokemonEntity>>(listOf())
+    var pokemonsAll = mutableStateOf<List<PokemonEntity>>(listOf())
 
     var isLoading = mutableStateOf(false)
 
     var showingFavorite = mutableStateOf(false)
 
-    private fun updatePokemonList(result: Results<List<PokemonEntity>>) {
-        viewModelScope.launch {
-            withContext(Dispatchers.Main) {
-                when (result) {
-                    is Results.Loading -> {
-                        isLoading.value = true
-                    }
-                    is Results.Success -> {
-                        pokemons.value = result.data
-                        isLoading.value = false
-                    }
-                    is Results.OnError -> {
-                        isLoading.value = false
-                        // TODO trigger onError UI
-                    }
-                }
-            }
-        }
-    }
+    var uiState = mutableStateOf(0)
+    // TODO: Create an enum for this and give it meaningful names,
+    // 0 all, 1 search, 3 favorite
 
     fun getAllPokemon() {
+        if (uiState != null) {
+            uiState.value = 0
+        }
         viewModelScope.launch(Dispatchers.IO) {
             val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
             pokemonRepository.getAllPokemon(mutableSharedFlow)
             mutableSharedFlow.collect { result ->
-                updatePokemonList(result)
+                viewModelScope.launch {
+                    withContext(Dispatchers.Main) {
+                        when (result) {
+                            is Results.Loading -> {
+                                isLoading.value = true
+                            }
+                            is Results.Success -> {
+                                pokemonsAll.value = result.data
+                                isLoading.value = false
+                            }
+                            is Results.OnError -> {
+                                isLoading.value = false
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -62,22 +84,54 @@ class PokemonViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
             if (!searchName.isBlank()) {
+                uiState.value = 1
                 pokemonRepository.searchPokemon(searchName, mutableSharedFlow)
             } else {
-                pokemonRepository.getAllPokemon(mutableSharedFlow)
+                uiState.value = 0
             }
             mutableSharedFlow.collect { result ->
-                updatePokemonList(result)
+                viewModelScope.launch {
+                    withContext(Dispatchers.Main) {
+                        when (result) {
+                            is Results.Loading -> {
+                                isLoading.value = true
+                            }
+                            is Results.Success -> {
+                                pokemonsSearched.value = result.data
+                                isLoading.value = false
+                            }
+                            is Results.OnError -> {
+                                isLoading.value = false
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     fun showFavoritePokemon() {
+        uiState.value = 2
         viewModelScope.launch(Dispatchers.IO) {
             val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
             pokemonRepository.getAllFavoritePokemon(mutableSharedFlow)
             mutableSharedFlow.collect { result ->
-                updatePokemonList(result)
+                viewModelScope.launch {
+                    withContext(Dispatchers.Main) {
+                        when (result) {
+                            is Results.Loading -> {
+                                isLoading.value = true
+                            }
+                            is Results.Success -> {
+                                pokemonsFavorite.value = result.data
+                                isLoading.value = false
+                            }
+                            is Results.OnError -> {
+                                isLoading.value = false
+                            }
+                        }
+                    }
+                }
             }
         }
     }

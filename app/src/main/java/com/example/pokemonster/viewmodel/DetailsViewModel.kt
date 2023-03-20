@@ -66,15 +66,11 @@ class DetailsViewModel @Inject constructor(
     }
 
     suspend fun getPokemonStats(pokemonId: Int) {
-        pokemonRepository.getPokemonStates(pokemonId).collect { stats ->
-            pokemonStats.value = stats
-        }
+        pokemonStats.value = pokemonRepository.getPokemonStates(pokemonId)
     }
 
     suspend fun getPokemonMoves(pokemonId: Int) {
-        pokemonRepository.getPokemonMoves(pokemonId).collect { moves ->
-            pokemonMoves.value = moves
-        }
+        pokemonMoves.value = pokemonRepository.getPokemonMoves(pokemonId)
     }
 
     private fun setMoveDescription(pokemonMoveEntity: PokemonMoveEntity) = pokemonRepository.setMoveDescription(

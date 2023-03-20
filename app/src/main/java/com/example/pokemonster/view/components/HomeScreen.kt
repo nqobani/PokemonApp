@@ -38,7 +38,7 @@ fun HomeScreen(navController: NavController, pokemonViewModel: PokemonViewModel 
                     if (pokemonViewModel.showingFavorite.value) {
                         pokemonViewModel.showFavoritePokemon()
                     } else {
-                        pokemonViewModel.getAllPokemon()
+                        pokemonViewModel.uiState.value = 0
                     }
                 }
             )

@@ -13,52 +13,52 @@ interface PokemonDao {
     fun getAllPokemons(): Flow<List<PokemonEntity>>
 
     @Query("SELECT * FROM tblPokemon WHERE name LIKE :query")
-    fun searchPokemons(query: String): Flow<List<PokemonEntity>>
+    suspend fun searchPokemons(query: String): List<PokemonEntity>
 
     @Query("SELECT * FROM tblPokemon WHERE id = :id")
     fun getPokemonById(id: Int): Flow<PokemonEntity>
 
     @Query("SELECT * FROM tblPokemon WHERE isFavorite = true")
-    fun getFavoritePokemon(): Flow<List<PokemonEntity>>
+    suspend fun getFavoritePokemon(): List<PokemonEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAllPokemons(vararg pokemonEntity: PokemonEntity)
+    suspend fun insertAllPokemons(vararg pokemonEntity: PokemonEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertPokemon(pokemonEntity: PokemonEntity)
+    suspend fun insertPokemon(pokemonEntity: PokemonEntity)
 
     @Update(PokemonEntity::class, onConflict = OnConflictStrategy.REPLACE)
-    fun updatePokemon(pokemonEntity: PokemonEntity)
+    suspend fun updatePokemon(pokemonEntity: PokemonEntity)
 
     @Delete
-    fun deletePokemon(pokemonEntity: PokemonEntity)
+    suspend fun deletePokemon(pokemonEntity: PokemonEntity)
 
-    @Delete
-    fun deleteAllPokemon(vararg pokemonEntity: PokemonEntity)
+    @Query("DELETE FROM tblPokemon")
+    suspend fun clearData()
     // /////////////////////STAT//////////////////////////
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAllStates(vararg pokemonEntity: PokemonStatEntity)
+    suspend fun insertAllStates(vararg pokemonEntity: PokemonStatEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertPokemonState(pokemonEntity: PokemonStatEntity)
+    suspend fun insertPokemonState(pokemonEntity: PokemonStatEntity)
 
     @Query("SELECT * FROM tblStates where pokemonId=:pokemonId")
-    fun getPokemonStates(pokemonId: Int): Flow<List<PokemonStatEntity>>
+    suspend fun getPokemonStates(pokemonId: Int): List<PokemonStatEntity>
 
     // ////////////////////////MOVES////////////////////////////
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insertAllPokemonMoves(vararg pokemonMoveEntity: PokemonMoveEntity)
+    suspend fun insertAllPokemonMoves(vararg pokemonMoveEntity: PokemonMoveEntity)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    fun insertPokemonMove(pokemonMoveEntity: PokemonMoveEntity)
+    suspend fun insertPokemonMove(pokemonMoveEntity: PokemonMoveEntity)
 
     @Update(PokemonMoveEntity::class, onConflict = OnConflictStrategy.REPLACE)
-    fun setMoveEffectDescription(pokemonMoveEntity: PokemonMoveEntity)
+    suspend fun setMoveEffectDescription(pokemonMoveEntity: PokemonMoveEntity)
 
     @Query("SELECT * FROM tblPokemonMove where pokemonId=:pokemonId")
-    fun getPokemonMoves(pokemonId: Int): Flow<List<PokemonMoveEntity>>
+    suspend fun getPokemonMoves(pokemonId: Int): List<PokemonMoveEntity>
 
     @Query("SELECT * FROM tblPokemonMove where id=:id")
-    fun getPokemonMove(id: Int): Flow<PokemonMoveEntity>
+    suspend fun getPokemonMove(id: Int): PokemonMoveEntity
 }

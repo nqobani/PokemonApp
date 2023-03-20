@@ -12,7 +12,6 @@ import com.example.pokemonster.io.remote.models.moves.MoveResponse
 import com.example.pokemonster.repository.states.Results
 import javax.inject.Inject
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 
@@ -53,9 +52,8 @@ class PokemonRepositoryImpl @Inject constructor(
         mutableSharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>
     ) {
         CoroutineScope(Dispatchers.Default).launch {
-            pokemonDatabase.pokemonDao().searchPokemons("$searchName%").collect { pokemons ->
-                mutableSharedFlow.emit(Results.Success(pokemons))
-            }
+            val pokemons = pokemonDatabase.pokemonDao().searchPokemons("$searchName%")
+            mutableSharedFlow.emit(Results.Success(pokemons))
         }
     }
 
@@ -67,7 +65,7 @@ class PokemonRepositoryImpl @Inject constructor(
             if (shouldEmitLoadingStatus) {
                 sharedFlow.emit(Results.Loading)
             }
-            val pokemonListResponse = pokemonAPI.getPaginatedPokemonList(0, 100)//TODO: use pagination
+            val pokemonListResponse = pokemonAPI.getPaginatedPokemonList(0, 100) // TODO: use pagination
             if (pokemonListResponse.isSuccessful) {
                 val pokemons = pokemonListResponse.body()
                 pokemons?.results?.forEach {
@@ -131,7 +129,7 @@ class PokemonRepositoryImpl @Inject constructor(
 
     override suspend fun getPokemonStates(
         pokemonId: Int
-    ): Flow<List<PokemonStatEntity>> {
+    ): List<PokemonStatEntity> {
         val call = CoroutineScope(Dispatchers.IO).async {
             pokemonDatabase.pokemonDao().getPokemonStates(pokemonId)
         }
@@ -140,7 +138,7 @@ class PokemonRepositoryImpl @Inject constructor(
 
     override suspend fun getPokemonMoves(
         pokemonId: Int
-    ): Flow<List<PokemonMoveEntity>> {
+    ): List<PokemonMoveEntity> {
         val call = CoroutineScope(Dispatchers.IO).async {
             pokemonDatabase.pokemonDao().getPokemonMoves(pokemonId)
         }
@@ -151,9 +149,8 @@ class PokemonRepositoryImpl @Inject constructor(
         mutableSharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>
     ) {
         CoroutineScope(Dispatchers.Default).launch {
-            pokemonDatabase.pokemonDao().getFavoritePokemon().collect { pokemons ->
-                mutableSharedFlow.emit(Results.Success(pokemons))
-            }
+            val pokemons = pokemonDatabase.pokemonDao().getFavoritePokemon()
+            mutableSharedFlow.emit(Results.Success(pokemons))
         }
     }
 
