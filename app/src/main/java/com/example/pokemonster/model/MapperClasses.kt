@@ -1,14 +1,11 @@
-package com.example.pokemonster.io.local
+package com.example.pokemonster.model
 
-import com.example.pokemonster.io.local.entities.PokemonEntity
-import com.example.pokemonster.io.local.entities.PokemonMoveEntity
-import com.example.pokemonster.io.local.entities.PokemonStatEntity
 import com.example.pokemonster.io.remote.models.pokemon.Move
-import com.example.pokemonster.io.remote.models.pokemon.PokemonResponse
+import com.example.pokemonster.io.remote.models.pokemon.PokemonRemoteResponse
 import com.example.pokemonster.io.remote.models.pokemon.Stat
 
-fun PokemonResponse.toPokemonEntity(): PokemonEntity {
-    return PokemonEntity(
+fun PokemonRemoteResponse.toProjectPokemon(): Pokemon {
+    return Pokemon(
         id = this.id,
         name = this.name,
         imageUrl = this.sprites.other.officialArtwork.front_default,
@@ -16,8 +13,8 @@ fun PokemonResponse.toPokemonEntity(): PokemonEntity {
     )
 }
 
-fun Stat.toStateEntity(pokemonId: Int): PokemonStatEntity {
-    return PokemonStatEntity(
+fun Stat.toProjectPokemonStat(pokemonId: Int): PokemonStats {
+    return PokemonStats(
         id = "${this.stat.name}-$pokemonId",
         pokemonId = pokemonId,
         name = this.stat.name,
@@ -25,10 +22,10 @@ fun Stat.toStateEntity(pokemonId: Int): PokemonStatEntity {
     )
 }
 
-fun Move.toMoveEntity(pokemonId: Int): PokemonMoveEntity {
+fun Move.toProjectPokemonMove(pokemonId: Int): PokemonMove {
     val slidedUrl = this.move.url.split('/')
     val moveId = slidedUrl[slidedUrl.size - 2]
-    return PokemonMoveEntity(
+    return PokemonMove(
         id = "$moveId-$pokemonId",
         pokemonId = pokemonId,
         moveRemoteId = moveId.toInt(),

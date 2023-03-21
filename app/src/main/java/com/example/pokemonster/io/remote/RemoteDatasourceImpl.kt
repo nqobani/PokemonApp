@@ -1,15 +1,15 @@
 package com.example.pokemonster.io.remote
 
-import com.example.pokemonster.io.remote.models.moves.MoveResponse
-import com.example.pokemonster.io.remote.models.pokemon.PokemonListResponse
-import com.example.pokemonster.io.remote.models.pokemon.PokemonResponse
+import com.example.pokemonster.io.remote.models.moves.MoveRemoteResponse
+import com.example.pokemonster.io.remote.models.pokemon.PokemonListRemoteResponse
+import com.example.pokemonster.io.remote.models.pokemon.PokemonRemoteResponse
 import com.example.pokemonster.repository.states.Results
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 
 class RemoteDatasourceImpl(private val pokemonAPI: PokemonAPI) : RemoteDatasource {
-    override suspend fun getPaginatedPokemonList(offset: Int, limit: Int): Results<PokemonListResponse> {
+    override suspend fun getPaginatedPokemonList(offset: Int, limit: Int): Results<PokemonListRemoteResponse> {
         return try {
             val call = CoroutineScope(Dispatchers.IO).async {
                 pokemonAPI.getPaginatedPokemonList(offset, limit)
@@ -29,7 +29,7 @@ class RemoteDatasourceImpl(private val pokemonAPI: PokemonAPI) : RemoteDatasourc
         }
     }
 
-    override suspend fun getPokemon(id: Int): Results<PokemonResponse> {
+    override suspend fun getPokemon(id: Int): Results<PokemonRemoteResponse> {
         return try {
             val call = CoroutineScope(Dispatchers.IO).async {
                 pokemonAPI.getPokemon(id)
@@ -49,7 +49,7 @@ class RemoteDatasourceImpl(private val pokemonAPI: PokemonAPI) : RemoteDatasourc
         }
     }
 
-    override suspend fun getMoveDetails(id: Int): Results<MoveResponse> {
+    override suspend fun getMoveDetails(id: Int): Results<MoveRemoteResponse> {
         return try {
             val call = CoroutineScope(Dispatchers.IO).async {
                 pokemonAPI.getMoveDetails(id)

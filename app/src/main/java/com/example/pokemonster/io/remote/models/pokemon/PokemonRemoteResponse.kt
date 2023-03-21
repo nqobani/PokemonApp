@@ -1,6 +1,6 @@
 package com.example.pokemonster.io.remote.models.pokemon
 
-data class PokemonResponse(
+data class PokemonRemoteResponse(
     val abilities: List<com.example.pokemonster.io.remote.models.pokemon.Ability>,
     val base_experience: Int,
     val forms: List<com.example.pokemonster.io.remote.models.pokemon.Form>,

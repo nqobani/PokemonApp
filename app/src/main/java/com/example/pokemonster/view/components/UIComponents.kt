@@ -10,11 +10,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.pokemonster.R
-import com.example.pokemonster.io.local.entities.PokemonEntity
+import com.example.pokemonster.model.Pokemon
 
 @Composable
 fun PokemonCard(
-    pokemonEntity: PokemonEntity,
+    pokemon: Pokemon,
     onItemClick: (Int, String, String) -> Unit
 ) {
     Card(
@@ -25,9 +25,9 @@ fun PokemonCard(
             .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
             .clickable {
                 onItemClick(
-                    pokemonEntity.id,
-                    pokemonEntity.name,
-                    pokemonEntity.imageUrl
+                    pokemon.id,
+                    pokemon.name,
+                    pokemon.imageUrl
                 )
             }
     ) {
@@ -40,13 +40,13 @@ fun PokemonCard(
         ) {
             AsyncImage(
                 modifier = Modifier.width(64.dp),
-                model = pokemonEntity.imageUrl,
+                model = pokemon.imageUrl,
                 placeholder = painterResource(R.drawable.ic_launcher_background),
                 contentDescription = null
             )
             Spacer(modifier = Modifier.size(8.dp))
             Text(
-                text = pokemonEntity.name,
+                text = pokemon.name,
                 style = MaterialTheme.typography.h5
             )
         }

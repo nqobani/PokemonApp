@@ -6,7 +6,7 @@ import app.cash.turbine.test
 import com.example.pokemonster.io.local.PokemonDatabase
 import com.example.pokemonster.io.local.entities.PokemonEntity
 import com.example.pokemonster.io.remote.PokemonAPI
-import com.example.pokemonster.io.remote.models.pokemon.PokemonListResponse
+import com.example.pokemonster.io.remote.models.pokemon.PokemonListRemoteResponse
 import com.example.pokemonster.io.remote.models.pokemon.Result
 import com.example.pokemonster.repository.PokemonRepository
 import com.example.pokemonster.repository.states.Results
@@ -27,8 +27,8 @@ class PokemonRepositoryTest {
 
     @Test
     fun `get pokemon successfully`() = runTest {
-        val response: Response<PokemonListResponse> = Response.success(
-            PokemonListResponse(
+        val response: Response<PokemonListRemoteResponse> = Response.success(
+            PokemonListRemoteResponse(
                 count = 0,
                 next = "",
                 previous = 0,

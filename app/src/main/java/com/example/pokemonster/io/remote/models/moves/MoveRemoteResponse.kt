@@ -1,6 +1,6 @@
 package com.example.pokemonster.io.remote.models.moves
 
-data class MoveResponse(
+data class MoveRemoteResponse(
     val accuracy: Int,
     val contest_combos: Any,
     val contest_effect: com.example.pokemonster.io.remote.models.moves.ContestEffect,

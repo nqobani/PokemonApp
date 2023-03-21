@@ -3,7 +3,7 @@ package com.example.pokemonster.viewmodel
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pokemonster.io.local.entities.PokemonEntity
+import com.example.pokemonster.model.Pokemon
 import com.example.pokemonster.repository.PokemonRepository
 import com.example.pokemonster.repository.states.Results
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,12 +21,9 @@ class PokemonViewModel @Inject constructor(
     init {
         getAllPokemon()
     }
-    var pokemons = mutableStateOf<List<PokemonEntity>>(listOf())
+    var pokemons = mutableStateOf<List<Pokemon>>(listOf())
         get() {
             return when (uiState.value) {
-                0 -> {
-                    pokemonsAll
-                }
                 1 -> {
                     pokemonsSearched
                 }
@@ -40,9 +37,9 @@ class PokemonViewModel @Inject constructor(
         }
         private set
 
-    var pokemonsFavorite = mutableStateOf<List<PokemonEntity>>(listOf())
-    var pokemonsSearched = mutableStateOf<List<PokemonEntity>>(listOf())
-    var pokemonsAll = mutableStateOf<List<PokemonEntity>>(listOf())
+    private var pokemonsFavorite = mutableStateOf<List<Pokemon>>(listOf())
+    private var pokemonsSearched = mutableStateOf<List<Pokemon>>(listOf())
+    private var pokemonsAll = mutableStateOf<List<Pokemon>>(listOf())
 
     var isLoading = mutableStateOf(false)
 
@@ -52,12 +49,12 @@ class PokemonViewModel @Inject constructor(
     // TODO: Create an enum for this and give it meaningful names,
     // 0 all, 1 search, 3 favorite
 
-    fun getAllPokemon() {
+    private fun getAllPokemon() {
         if (uiState != null) {
             uiState.value = 0
         }
         viewModelScope.launch(Dispatchers.IO) {
-            val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+            val mutableSharedFlow = MutableSharedFlow<Results<List<Pokemon>>>()
             pokemonRepository.getAllPokemon(mutableSharedFlow)
             mutableSharedFlow.collect { result ->
                 viewModelScope.launch {

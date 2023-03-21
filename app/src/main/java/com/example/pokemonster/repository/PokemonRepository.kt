@@ -1,14 +1,14 @@
 package com.example.pokemonster.repository
 
 import com.example.pokemonster.io.local.LocalDataSource
-import com.example.pokemonster.io.local.entities.PokemonEntity
-import com.example.pokemonster.io.local.entities.PokemonMoveEntity
-import com.example.pokemonster.io.local.entities.PokemonStatEntity
-import com.example.pokemonster.io.local.toMoveEntity
-import com.example.pokemonster.io.local.toPokemonEntity
-import com.example.pokemonster.io.local.toStateEntity
 import com.example.pokemonster.io.remote.RemoteDatasource
-import com.example.pokemonster.io.remote.models.moves.MoveResponse
+import com.example.pokemonster.io.remote.models.moves.MoveRemoteResponse
+import com.example.pokemonster.model.Pokemon
+import com.example.pokemonster.model.PokemonMove
+import com.example.pokemonster.model.PokemonStats
+import com.example.pokemonster.model.toProjectPokemon
+import com.example.pokemonster.model.toProjectPokemonMove
+import com.example.pokemonster.model.toProjectPokemonStat
 import com.example.pokemonster.repository.states.Results
 import javax.inject.Inject
 import kotlinx.coroutines.*
@@ -18,7 +18,7 @@ class PokemonRepository @Inject constructor(
     private val remoteDatasource: RemoteDatasource,
     private val localDataSource: LocalDataSource
 ) {
-    fun getAllPokemon(mutableSharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>) {
+    fun getAllPokemon(mutableSharedFlow: MutableSharedFlow<Results<List<Pokemon>>>) {
         var shouldEmitLoadingStatus = false
         CoroutineScope(Dispatchers.IO).launch {
             localDataSource.getAllPokemon().collect { pokemons ->
@@ -36,7 +36,7 @@ class PokemonRepository @Inject constructor(
     }
 
     private fun getRemotePokemonAndCache(
-        sharedFlow: MutableSharedFlow<Results<List<PokemonEntity>>>,
+        sharedFlow: MutableSharedFlow<Results<List<Pokemon>>>,
         shouldEmitLoadingStatus: Boolean
     ) {
         CoroutineScope(Dispatchers.Default).launch {
@@ -57,16 +57,16 @@ class PokemonRepository @Inject constructor(
                                 withContext(Dispatchers.IO) {
                                     details?.let { responseBody ->
                                         localDataSource.addPokemon(
-                                            responseBody.toPokemonEntity()
+                                            responseBody.toProjectPokemon()
                                         )
                                         details.stats.forEach { stat ->
                                             localDataSource.addStat(
-                                                stat.toStateEntity(responseBody.id)
+                                                stat.toProjectPokemonStat(responseBody.id)
                                             )
                                         }
                                         details.moves.forEach { move ->
                                             localDataSource.addMove(
-                                                move.toMoveEntity(responseBody.id)
+                                                move.toProjectPokemonMove(responseBody.id)
                                             )
                                         }
                                     }
@@ -95,7 +95,7 @@ class PokemonRepository @Inject constructor(
 
     fun getMoveDetails(
         id: Int,
-        mutableSharedFlow: MutableSharedFlow<Results<MoveResponse>>
+        mutableSharedFlow: MutableSharedFlow<Results<MoveRemoteResponse>>
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             mutableSharedFlow.emit(Results(Results.Status.LOADING, null, null))
@@ -127,25 +127,25 @@ class PokemonRepository @Inject constructor(
 
     fun getPokemonById(id: Int) = localDataSource.getPokemonById(id)
 
-    suspend fun getPokemonStates(pokemonId: Int): List<PokemonStatEntity> {
+    suspend fun getPokemonStates(pokemonId: Int): List<PokemonStats> {
         val stats = CoroutineScope(Dispatchers.IO).async {
             localDataSource.getPokemonStates(pokemonId)
         }
         return stats.await()
     }
 
-    suspend fun getPokemonMoves(pokemonId: Int): List<PokemonMoveEntity> {
+    suspend fun getPokemonMoves(pokemonId: Int): List<PokemonMove> {
         val stats = CoroutineScope(Dispatchers.IO).async {
             localDataSource.getPokemonMoves(pokemonId)
         }
         return stats.await()
     }
 
-    fun setMoveDescription(pokemonMoveEntity: PokemonMoveEntity) {
+    fun setMoveDescription(pokemonMoveEntity: PokemonMove) {
         localDataSource.setMoveDescription(pokemonMoveEntity)
     }
 
-    fun updatePokemon(pokemonEntity: PokemonEntity) {
+    fun updatePokemon(pokemonEntity: Pokemon) {
         localDataSource.updatePokemon(pokemonEntity)
     }
 }

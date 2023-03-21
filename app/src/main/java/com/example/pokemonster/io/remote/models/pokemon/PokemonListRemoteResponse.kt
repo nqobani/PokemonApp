@@ -1,6 +1,6 @@
 package com.example.pokemonster.io.remote.models.pokemon
 
-data class PokemonListResponse(
+data class PokemonListRemoteResponse(
     val count: Int,
     val next: String,
     val previous: Any,
