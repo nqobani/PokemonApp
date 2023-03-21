@@ -2,10 +2,13 @@ package com.example.pokemonster.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.pokemonster.io.local.LocalDataSource
+import com.example.pokemonster.io.local.LocalDataSourceImpl
 import com.example.pokemonster.io.local.PokemonDatabase
 import com.example.pokemonster.io.remote.PokemonAPI
+import com.example.pokemonster.io.remote.RemoteDatasource
+import com.example.pokemonster.io.remote.RemoteDatasourceImpl
 import com.example.pokemonster.repository.PokemonRepository
-import com.example.pokemonster.repository.PokemonRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,9 +41,15 @@ object AppModule {
 
     @Provides
     fun pokemonRepository(
-        pokemonAPI: PokemonAPI,
-        pokemonDatabase: PokemonDatabase
-    ): PokemonRepository {
-        return PokemonRepositoryImpl(pokemonAPI, pokemonDatabase)
-    }
+        remoteDatasource: RemoteDatasource,
+        localDataSource: LocalDataSource
+    ) = PokemonRepository(remoteDatasource, localDataSource)
+
+    @Provides
+    fun provideLocalDataSource(pokemonDatabase: PokemonDatabase):
+        LocalDataSource = LocalDataSourceImpl(pokemonDatabase)
+
+    @Provides
+    fun provideRemoteDataSource(pokemonAPI: PokemonAPI):
+        RemoteDatasource = RemoteDatasourceImpl(pokemonAPI)
 }

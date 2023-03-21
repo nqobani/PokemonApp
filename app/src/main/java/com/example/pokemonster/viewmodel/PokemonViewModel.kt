@@ -62,15 +62,17 @@ class PokemonViewModel @Inject constructor(
             mutableSharedFlow.collect { result ->
                 viewModelScope.launch {
                     withContext(Dispatchers.Main) {
-                        when (result) {
-                            is Results.Loading -> {
-                                isLoading.value = true
-                            }
-                            is Results.Success -> {
-                                pokemonsAll.value = result.data
+                        when (result.status) {
+                            Results.Status.SUCCESS -> {
+                                result.data?.let {
+                                    pokemonsAll.value = it
+                                }
                                 isLoading.value = false
                             }
-                            is Results.OnError -> {
+                            Results.Status.LOADING -> {
+                                isLoading.value = true
+                            }
+                            Results.Status.ERROR -> {
                                 isLoading.value = false
                             }
                         }
@@ -81,26 +83,26 @@ class PokemonViewModel @Inject constructor(
     }
 
     fun searchPokemon(searchName: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
+        viewModelScope.launch {
             if (!searchName.isBlank()) {
                 uiState.value = 1
-                pokemonRepository.searchPokemon(searchName, mutableSharedFlow)
             } else {
                 uiState.value = 0
             }
-            mutableSharedFlow.collect { result ->
+            pokemonRepository.searchPokemon(searchName).collect { result ->
                 viewModelScope.launch {
                     withContext(Dispatchers.Main) {
-                        when (result) {
-                            is Results.Loading -> {
-                                isLoading.value = true
-                            }
-                            is Results.Success -> {
-                                pokemonsSearched.value = result.data
+                        when (result.status) {
+                            Results.Status.SUCCESS -> {
+                                result.data?.let {
+                                    pokemonsSearched.value = it
+                                }
                                 isLoading.value = false
                             }
-                            is Results.OnError -> {
+                            Results.Status.LOADING -> {
+                                isLoading.value = true
+                            }
+                            Results.Status.ERROR -> {
                                 isLoading.value = false
                             }
                         }
@@ -113,20 +115,20 @@ class PokemonViewModel @Inject constructor(
     fun showFavoritePokemon() {
         uiState.value = 2
         viewModelScope.launch(Dispatchers.IO) {
-            val mutableSharedFlow = MutableSharedFlow<Results<List<PokemonEntity>>>()
-            pokemonRepository.getAllFavoritePokemon(mutableSharedFlow)
-            mutableSharedFlow.collect { result ->
+            pokemonRepository.getAllFavoritePokemon().collect { result ->
                 viewModelScope.launch {
                     withContext(Dispatchers.Main) {
-                        when (result) {
-                            is Results.Loading -> {
-                                isLoading.value = true
-                            }
-                            is Results.Success -> {
-                                pokemonsFavorite.value = result.data
+                        when (result.status) {
+                            Results.Status.SUCCESS -> {
+                                result.data?.let {
+                                    pokemonsFavorite.value = it
+                                }
                                 isLoading.value = false
                             }
-                            is Results.OnError -> {
+                            Results.Status.LOADING -> {
+                                isLoading.value = true
+                            }
+                            Results.Status.ERROR -> {
                                 isLoading.value = false
                             }
                         }

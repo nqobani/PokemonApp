@@ -30,16 +30,18 @@ class DetailsViewModel @Inject constructor(
             val mutableSharedFlow = MutableSharedFlow<Results<MoveResponse>>()
             pokemonRepository.getMoveDetails(move.moveRemoteId, mutableSharedFlow)
             mutableSharedFlow.collect { moveState ->
-                when (moveState) {
-                    is Results.Loading -> {
+                when (moveState.status) {
+                    Results.Status.SUCCESS -> {
+                        moveState.data?.let {
+                            val effect = moveState.data.effect_entries[0].effect
+                            selectedMoveEffect.value = effect
+                            setMoveDescription(move.copy(effect = effect))
+                        }
+                    }
+                    Results.Status.LOADING -> {
                         selectedMoveEffect.value = "Loading..."
                     }
-                    is Results.Success -> {
-                        val effect = moveState.data.effect_entries[0].effect
-                        selectedMoveEffect.value = effect
-                        setMoveDescription(move.copy(effect = effect))
-                    }
-                    is Results.OnError -> {
+                    Results.Status.ERROR -> {
                         selectedMoveEffect.value = ";-("
                     }
                 }
@@ -49,24 +51,16 @@ class DetailsViewModel @Inject constructor(
 
     fun getPokemonById(id: Int) {
         viewModelScope.launch {
-            val mutableSharedFlow = MutableSharedFlow<Results<PokemonEntity>>()
-            pokemonRepository.getPokemonById(id, mutableSharedFlow)
-            mutableSharedFlow.collect { result ->
-                when (result) {
-                    is Results.Loading -> {
-                    }
-                    is Results.Success -> {
-                        pokemonInDetailsView.value = result.data
-                    }
-                    is Results.OnError -> {
-                    }
-                }
+            pokemonRepository.getPokemonById(id).collect { result ->
+                pokemonInDetailsView.value = result
             }
         }
     }
 
-    suspend fun getPokemonStats(pokemonId: Int) {
-        pokemonStats.value = pokemonRepository.getPokemonStates(pokemonId)
+    fun getPokemonStats(pokemonId: Int) {
+        viewModelScope.launch {
+            pokemonStats.value = pokemonRepository.getPokemonStates(pokemonId)
+        }
     }
 
     suspend fun getPokemonMoves(pokemonId: Int) {

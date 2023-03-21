@@ -41,7 +41,7 @@ interface PokemonDao {
     suspend fun insertAllStates(vararg pokemonEntity: PokemonStatEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPokemonState(pokemonEntity: PokemonStatEntity)
+    suspend fun insertPokemonStat(pokemonEntity: PokemonStatEntity)
 
     @Query("SELECT * FROM tblStates where pokemonId=:pokemonId")
     suspend fun getPokemonStates(pokemonId: Int): List<PokemonStatEntity>

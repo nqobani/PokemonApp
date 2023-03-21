@@ -5,7 +5,6 @@ import androidx.room.Room
 import com.example.pokemonster.io.local.PokemonDatabase
 import com.example.pokemonster.io.remote.PokemonAPI
 import com.example.pokemonster.repository.PokemonRepository
-import com.example.pokemonster.repository.PokemonRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,6 +39,6 @@ object TestAppModule {
         pokemonAPI: PokemonAPI,
         pokemonDatabase: PokemonDatabase
     ): PokemonRepository {
-        return PokemonRepositoryImpl(pokemonAPI, pokemonDatabase)
+        return PokemonRepository(pokemonAPI, pokemonDatabase)
     }
 }

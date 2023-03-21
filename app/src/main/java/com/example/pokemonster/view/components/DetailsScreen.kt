@@ -201,7 +201,7 @@ private fun MoveDescriptionView(modifier: Modifier, moveName: String, moveEffect
     Box(
         modifier = modifier
     ) {
-        Column() {
+        Column {
             Text(text = moveName, style = MaterialTheme.typography.h6)
             Text(text = moveEffect, style = MaterialTheme.typography.caption)
         }
