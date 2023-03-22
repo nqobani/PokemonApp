@@ -3,21 +3,24 @@ package com.example.pokemonster.viewmodel
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pokemonster.io.remote.models.moves.MoveRemoteResponse
 import com.example.pokemonster.model.Pokemon
 import com.example.pokemonster.model.PokemonMove
 import com.example.pokemonster.model.PokemonStats
-import com.example.pokemonster.repository.PokemonRepository
 import com.example.pokemonster.repository.states.Results
+import com.example.pokemonster.usecases.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
-    private val pokemonRepository: PokemonRepository
+    private val getPokemonMoveUsecase: GetPokemonMoveUsecase,
+    private val getPokemonUsecase: GetPokemonUsecase,
+    private val getPokemonMovesUsecase: GetPokemonMovesUsecase,
+    private val getPokemonStatsUsecase: GetPokemonStatsUsecase,
+    private val setPokemonMoveDescriptionUsecase: SetPokemonMoveDescriptionUsecase,
+    private val updatePokemonUsecase: UpdatePokemonUsecase
 ) : ViewModel() {
     var selectedMoveName = mutableStateOf("")
     var pokemonInDetailsView = mutableStateOf<Pokemon?>(null)
@@ -27,9 +30,7 @@ class DetailsViewModel @Inject constructor(
 
     fun getMoveDetails(move: PokemonMove) {
         viewModelScope.launch(Dispatchers.IO) {
-            val mutableSharedFlow = MutableSharedFlow<Results<MoveRemoteResponse>>()
-            pokemonRepository.getMoveDetails(move.moveRemoteId, mutableSharedFlow)
-            mutableSharedFlow.collect { moveState ->
+            getPokemonMoveUsecase(move.moveRemoteId).collect { moveState ->
                 when (moveState.status) {
                     Results.Status.SUCCESS -> {
                         moveState.data?.let {
@@ -51,7 +52,7 @@ class DetailsViewModel @Inject constructor(
 
     fun getPokemonById(id: Int) {
         viewModelScope.launch {
-            pokemonRepository.getPokemonById(id).collect { result ->
+            getPokemonUsecase(id).collect { result ->
                 pokemonInDetailsView.value = result
             }
         }
@@ -59,21 +60,21 @@ class DetailsViewModel @Inject constructor(
 
     fun getPokemonStats(pokemonId: Int) {
         viewModelScope.launch {
-            pokemonStats.value = pokemonRepository.getPokemonStates(pokemonId)
+            pokemonStats.value = getPokemonStatsUsecase(pokemonId)
         }
     }
 
     suspend fun getPokemonMoves(pokemonId: Int) {
-        pokemonMoves.value = pokemonRepository.getPokemonMoves(pokemonId)
+        pokemonMoves.value = getPokemonMovesUsecase(pokemonId)
     }
 
-    private fun setMoveDescription(pokemonMove: PokemonMove) = pokemonRepository.setMoveDescription(
-        pokemonMove
-    )
+    private fun setMoveDescription(
+        pokemonMove: PokemonMove
+    ) = setPokemonMoveDescriptionUsecase(pokemonMove)
 
     fun updatePokemon(pokemon: Pokemon) {
         viewModelScope.launch(Dispatchers.IO) {
-            pokemonRepository.updatePokemon(pokemon)
+            updatePokemonUsecase(pokemon)
         }
     }
 }

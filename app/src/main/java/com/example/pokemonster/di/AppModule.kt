@@ -9,6 +9,7 @@ import com.example.pokemonster.io.remote.PokemonAPI
 import com.example.pokemonster.io.remote.RemoteDatasource
 import com.example.pokemonster.io.remote.RemoteDatasourceImpl
 import com.example.pokemonster.repository.PokemonRepository
+import com.example.pokemonster.usecases.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -52,4 +53,39 @@ object AppModule {
     @Provides
     fun provideRemoteDataSource(pokemonAPI: PokemonAPI):
         RemoteDatasource = RemoteDatasourceImpl(pokemonAPI)
+
+    @Provides
+    fun providesGetPokemonUsecase(
+        pokemonRepository: PokemonRepository
+    ) = GetPokemonUsecase(pokemonRepository)
+
+    @Provides
+    fun providesGetFavoritePokemonUsecase(
+        pokemonRepository: PokemonRepository
+    ) = GetFavoritePokemonUsecase(pokemonRepository)
+
+    @Provides
+    fun providesGetPokemonMoveUsecase(
+        pokemonRepository: PokemonRepository
+    ) = GetPokemonMoveUsecase(pokemonRepository)
+
+    @Provides
+    fun providesGetPokemonMovesUsecase(
+        pokemonRepository: PokemonRepository
+    ) = GetPokemonMovesUsecase(pokemonRepository)
+
+    @Provides
+    fun providesGetPokemonStatsUsecase(
+        pokemonRepository: PokemonRepository
+    ) = GetPokemonStatsUsecase(pokemonRepository)
+
+    @Provides
+    fun providesUpdatePokemonUsecase(
+        pokemonRepository: PokemonRepository
+    ) = UpdatePokemonUsecase(pokemonRepository)
+
+    @Provides
+    fun providesSetPokemonMoveDescriptionUsecase(
+        pokemonRepository: PokemonRepository
+    ) = SetPokemonMoveDescriptionUsecase(pokemonRepository)
 }

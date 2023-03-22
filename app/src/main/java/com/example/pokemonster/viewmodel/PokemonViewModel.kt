@@ -4,18 +4,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pokemonster.model.Pokemon
-import com.example.pokemonster.repository.PokemonRepository
 import com.example.pokemonster.repository.states.Results
+import com.example.pokemonster.usecases.GetFavoritePokemonUsecase
+import com.example.pokemonster.usecases.GetPokemonUsecase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class PokemonViewModel @Inject constructor(
-    private val pokemonRepository: PokemonRepository
+    private val getPokemonUsecase: GetPokemonUsecase,
+    private val getFavoritePokemonUsecase: GetFavoritePokemonUsecase
 ) : ViewModel() {
 
     init {
@@ -53,26 +53,20 @@ class PokemonViewModel @Inject constructor(
         if (uiState != null) {
             uiState.value = 0
         }
-        viewModelScope.launch(Dispatchers.IO) {
-            val mutableSharedFlow = MutableSharedFlow<Results<List<Pokemon>>>()
-            pokemonRepository.getAllPokemon(mutableSharedFlow)
-            mutableSharedFlow.collect { result ->
-                viewModelScope.launch {
-                    withContext(Dispatchers.Main) {
-                        when (result.status) {
-                            Results.Status.SUCCESS -> {
-                                result.data?.let {
-                                    pokemonsAll.value = it
-                                }
-                                isLoading.value = false
-                            }
-                            Results.Status.LOADING -> {
-                                isLoading.value = true
-                            }
-                            Results.Status.ERROR -> {
-                                isLoading.value = false
-                            }
+        viewModelScope.launch {
+            getPokemonUsecase().collect { result ->
+                when (result.status) {
+                    Results.Status.SUCCESS -> {
+                        result.data?.let {
+                            pokemonsAll.value = it
                         }
+                        isLoading.value = false
+                    }
+                    Results.Status.LOADING -> {
+                        isLoading.value = true
+                    }
+                    Results.Status.ERROR -> {
+                        isLoading.value = false
                     }
                 }
             }
@@ -86,23 +80,19 @@ class PokemonViewModel @Inject constructor(
             } else {
                 uiState.value = 0
             }
-            pokemonRepository.searchPokemon(searchName).collect { result ->
-                viewModelScope.launch {
-                    withContext(Dispatchers.Main) {
-                        when (result.status) {
-                            Results.Status.SUCCESS -> {
-                                result.data?.let {
-                                    pokemonsSearched.value = it
-                                }
-                                isLoading.value = false
-                            }
-                            Results.Status.LOADING -> {
-                                isLoading.value = true
-                            }
-                            Results.Status.ERROR -> {
-                                isLoading.value = false
-                            }
+            getPokemonUsecase(searchName).collect { result ->
+                when (result.status) {
+                    Results.Status.SUCCESS -> {
+                        result.data?.let {
+                            pokemonsSearched.value = it
                         }
+                        isLoading.value = false
+                    }
+                    Results.Status.LOADING -> {
+                        isLoading.value = true
+                    }
+                    Results.Status.ERROR -> {
+                        isLoading.value = false
                     }
                 }
             }
@@ -112,23 +102,19 @@ class PokemonViewModel @Inject constructor(
     fun showFavoritePokemon() {
         uiState.value = 2
         viewModelScope.launch(Dispatchers.IO) {
-            pokemonRepository.getAllFavoritePokemon().collect { result ->
-                viewModelScope.launch {
-                    withContext(Dispatchers.Main) {
-                        when (result.status) {
-                            Results.Status.SUCCESS -> {
-                                result.data?.let {
-                                    pokemonsFavorite.value = it
-                                }
-                                isLoading.value = false
-                            }
-                            Results.Status.LOADING -> {
-                                isLoading.value = true
-                            }
-                            Results.Status.ERROR -> {
-                                isLoading.value = false
-                            }
+            getFavoritePokemonUsecase().collect { result ->
+                when (result.status) {
+                    Results.Status.SUCCESS -> {
+                        result.data?.let {
+                            pokemonsFavorite.value = it
                         }
+                        isLoading.value = false
+                    }
+                    Results.Status.LOADING -> {
+                        isLoading.value = true
+                    }
+                    Results.Status.ERROR -> {
+                        isLoading.value = false
                     }
                 }
             }
